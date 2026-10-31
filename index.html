@@ -158,7 +158,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
  <div class="banner"><h2><i class="fa-solid fa-house-chimney-window"></i> <span id="tName"></span></h2><p id="tWelcome">نظام إدارة الحجوزات والماليات</p></div>
  <div class="top">
   <button class="menu" id="menuBtn"><i class="fa-solid fa-bars"></i></button>
-  <div style="display:flex;gap:6px;align-items:center"><button class="menu" style="background:#c62828" title="خروج" onclick="tLogout()"><i class="fa-solid fa-right-from-bracket"></i></button><select id="period" style="width:auto;padding:6px 10px"></select></div>
+  <div style="display:flex;gap:6px;align-items:center"><button class="menu" id="bellBtn" title="التنبيهات" onclick="bellTog()" style="position:relative;background:#5f6b7a"><i class="fa-solid fa-bell"></i><span id="bellN" style="display:none;position:absolute;top:-5px;left:-5px;min-width:18px;height:18px;border-radius:9px;background:#e53935;color:#fff;font-size:11px;align-items:center;justify-content:center;padding:0 4px">0</span></button><button class="menu" style="background:#c62828" title="خروج" onclick="tLogout()"><i class="fa-solid fa-right-from-bracket"></i></button><select id="period" style="width:auto;padding:6px 10px"></select></div>
  </div>
 
  <section id="dashboard" class="tab active">
@@ -493,15 +493,26 @@ $('bf').onsubmit=e=>{
  const c=conflict(date,sec,$('bPeriod').value,id);
  if(c){alert('⚠️ تعارض في الحجز:\n'+c);return}
  const b={id:id?+id:Date.now(),name:$('bName').value.trim(),phone:ph,date,period:$('bPeriod').value,section:sec,price:num($('bPrice').value),paid:num($('bPaid').value),method:$('bMethod').value,status:$('bStatus').value,unit:$('bUnit').value||''};
- if(id){const i=bookings.findIndex(x=>String(x.id)===id);if(i>-1)bookings[i]=b;alert('تم تحديث الحجز بنجاح!')}else{bookings.push(b);alert('تم تسجيل الحجز بنجاح!')}
- resetForm();save();if(id)sw('records')};
+ const old=id?bookings.find(x=>String(x.id)===id):null;
+  claimSlot(b).then(ok=>{if(!ok){alert('⚠️ تعارض في الحجز:\nهذا الموعد حُجز للتو من مستخدم آخر. حدّث الصفحة واختر موعداً آخر.');return}
+   if(id){const i=bookings.findIndex(x=>String(x.id)===id);if(i>-1)bookings[i]=b;alert('تم تحديث الحجز بنجاح!');if(old&&(old.date!==b.date||(old.unit||'')!==(b.unit||'')))releaseSlot(old)}else{bookings.push(b);alert('تم تسجيل الحجز بنجاح!')}
+   resetForm();save();if(id)sw('records')})};
+function slotKey(b){return 'data/'+TID+'/slots/'+(b.date+'_'+(b.unit||'0')).replace(/[.$#\[\]\/]/g,c=>'%'+c.charCodeAt(0).toString(16))}
+const _arr=c=>Array.isArray(c)?c:(c?Object.values(c):[]);
+function claimSlot(b){if(typeof db==='undefined'||!TEN)return Promise.resolve(true);
+ const run=db.ref(slotKey(b)).transaction(cur=>{let base=cur?_arr(cur):bookings.filter(x=>x.date===b.date&&(x.unit||'')===(b.unit||'')).map(x=>({id:x.id,period:x.period,section:x.section}));
+  const o=base.filter(x=>String(x.id)!==String(b.id)),same=o.filter(x=>x.period===b.period||x.period==='يوم كامل'||b.period==='يوم كامل');
+  if(same.some(x=>x.section==='قسمين')||(b.section==='قسمين'&&same.length)||same.some(x=>x.section===b.section))return;
+  o.push({id:b.id,period:b.period,section:b.section});return o}).then(r=>r.committed).catch(()=>true);
+ return Promise.race([run,new Promise(r=>setTimeout(()=>r(true),6000))])}
+function releaseSlot(b){try{if(!TEN||typeof db==='undefined')return;db.ref(slotKey(b)).transaction(cur=>{const o=_arr(cur).filter(x=>String(x.id)!==String(b.id));return o.length?o:null}).catch(()=>{})}catch(e){}}
 function resetForm(){$('bf').reset();$('bId').value='';$('bDate').value=today();$('formTitle').textContent='حجز جديد للشاليه';autoPrice()}
 function editBooking(id){
  const b=bookings.find(x=>String(x.id)===String(id));if(!b)return;
  $('bId').value=b.id;$('bName').value=b.name;$('bPhone').value=String(b.phone).replace(/\D/g,'').replace(/^966/,'').replace(/^0/,'');
  $('bDate').value=b.date;$('bPeriod').value=b.period;$('bSec').value=b.section;$('bUnit').value=b.unit||'';$('bPrice').value=b.price;$('bPaid').value=b.paid;$('bMethod').value=b.method||'تحويل بنكي';$('bStatus').value=b.status;calc();
  $('formTitle').textContent='تعديل: '+b.name;sw('new')}
-function delBooking(id){bookings=bookings.filter(b=>String(b.id)!==String(id));save()}
+function delBooking(id){const o=bookings.find(b=>String(b.id)===String(id));bookings=bookings.filter(b=>String(b.id)!==String(id));save();if(o)releaseSlot(o)}
 
 /* expenses */
 $('ef').onsubmit=e=>{e.preventDefault();expenses.push({id:Date.now(),title:$('eTitle').value.trim(),category:$('eCat').value,amount:num($('eAmt').value),date:$('eDate').value});save();$('ef').reset();$('eDate').value=today();alert('تم تسجيل المصروف بنجاح!')};
@@ -729,7 +740,7 @@ function ntfRender(){const box=$('ntf');if(!box||!TEN)return;let hid=[];try{hid=
  const L=NT.filter(n=>n.on!==false).map(n=>({id:n.id,type:col[n.type]?n.type:'info',text:n.text}));
  const d=TEN.end?Math.ceil((new Date(TEN.end+'T23:59:59')-new Date())/864e5):null;
  if(d!==null&&d>=0&&d<=15&&!sessionStorage.getItem('sa'))L.unshift({id:'sub'+today(),type:'sub',text:d===0?'ينتهي اشتراككم اليوم ('+TEN.end+')! تواصلوا مع الدعم للتجديد.':'ينتهي اشتراككم بعد '+d+' يوم ('+TEN.end+'). تواصلوا مع الدعم للتجديد.',renew:1});
- const vis=L.filter(n=>!hid.includes(n.id));const ph=normPhone(SUPPORT_PH);
+ const vis=L.filter(n=>!hid.includes(n.id));const ph=normPhone(SUPPORT_PH);window.NTALL=L;window.NTHID=hid;try{bellUpdate()}catch(e){}
  box.innerHTML=vis.map(n=>`<div class="nt" style="background:${col[n.type]}"><span>${ic[n.type]}</span><b>${esc(n.text)}</b>${n.renew&&ph?`<a target="_blank" href="https://wa.me/${ph}?text=${encodeURIComponent('السلام عليكم، أرغب بتجديد اشتراك منشأة ('+(TEN.name||'')+')')}">تجديد</a>`:''}<button onclick="ntfHide('${n.id}')">✕</button></div>`).join('');
  document.body.style.paddingTop=box.offsetHeight+'px'}
 function ntfHide(id){let h=[];try{h=JSON.parse(localStorage.getItem('ntf_hid')||'[]')}catch(e){}h.push(id);localStorage.setItem('ntf_hid',JSON.stringify(h.slice(-50)));ntfRender()}
@@ -841,7 +852,9 @@ h+=row('تاريخ الانتهاء',T.end||'—');
 if(left!==null)h+=row('المتبقي',left<0?'منتهي منذ '+(-left)+' يوم':left+' يوم');
 if(P.units)h+=row('عدد الوحدات',P.units);if(P.users)h+=row('عدد المستخدمين',P.users);
 if(pct!==null)h+='<div style="background:#eee;border-radius:10px;height:12px;margin:14px 0;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+stt[1]+'"></div></div>';
-h+='<button onclick="try{window.open(\'https://wa.me/\'+String(SUPPORT_PH).replace(/\\D/g,\'\')+\'?text=\'+encodeURIComponent(\'السلام عليكم، أرغب بتجديد اشتراك منشأة (\'+(TEN.name||\'\')+\')\'),\'_blank\')}catch(e){}" style="width:100%;background:#25D366;color:#fff;border:0;border-radius:12px;padding:12px;font-size:16px;margin-top:8px">🔄 تجديد أو ترقية الباقة</button>';
+const bt=(l,k,c)=>'<button onclick="subWA(\''+k+'\')" style="width:100%;background:'+c+';color:#fff;border:0;border-radius:12px;padding:12px;font-size:16px;margin-top:8px">'+l+'</button>';
+if(left!==null&&left<0)h+=bt('🔄 تجديد الاشتراك','renew','#25D366');
+else{if(left!==null&&left<=15)h+=bt('🔄 تجديد الاشتراك','renew','#25D366');h+=bt('⬆ ترقية الباقة','upgrade','#2e86de')}
 document.getElementById('subBox').innerHTML=h}
 (function(){const o=sw;sw=function(t){o(t);if(t==='mysub')renderPlan()};
 let k=0;const iv=setInterval(()=>{k++;try{if(typeof ME!=='undefined'&&ME){clearInterval(iv);const li=document.getElementById('navSub');if(li&&ME.role==='staff')li.style.display='none'}}catch(e){}if(k>40)clearInterval(iv)},300)})();
@@ -852,6 +865,16 @@ try{const t=+localStorage.getItem('authlost');if(t){localStorage.removeItem('aut
 </script>
 <script>
 (function(){let k=0;const iv=setInterval(()=>{k++;try{if(typeof ME!=='undefined'&&ME){clearInterval(iv);if(ME.role!=='owner')document.body.classList.add('nonowner')}}catch(e){}if(k>60)clearInterval(iv)},300)})();
+</script>
+<script>
+function subWA(k){try{const m=k==='renew'?'السلام عليكم، أرغب بتجديد اشتراك منشأة ('+(TEN.name||'')+')':'السلام عليكم، أرغب بترقية باقة منشأة ('+(TEN.name||'')+')';window.open('https://wa.me/'+String(SUPPORT_PH).replace(/\D/g,'')+'?text='+encodeURIComponent(m),'_blank')}catch(e){}}
+(function(){const p=document.createElement('div');p.id='bellP';p.style.cssText='display:none;position:fixed;right:12px;left:12px;max-width:420px;margin:auto;background:#fff;color:#222;border-radius:14px;box-shadow:0 8px 30px #0004;z-index:9600;max-height:60vh;overflow:auto;font-size:14px';document.body.appendChild(p)})();
+function bellUpdate(){const n=document.getElementById('bellN');if(!n)return;const hid=window.NTHID||[],v=(window.NTALL||[]).filter(x=>!hid.includes(x.id));n.textContent=v.length;n.style.display=v.length?'flex':'none';if(document.getElementById('bellP').style.display==='block')bellDraw()}
+function bellTog(){const p=document.getElementById('bellP');const o=p.style.display!=='block';p.style.display=o?'block':'none';if(o){p.style.top=((document.getElementById('ntf')||{}).offsetHeight||0)+68+'px';bellDraw()}}
+function bellDraw(){const p=document.getElementById('bellP'),all=window.NTALL||[],hid=window.NTHID||[],ic={update:'🔄',maint:'🛠️',outage:'⚠️',info:'📢',sub:'⏳'},ph=normPhone(SUPPORT_PH);
+let h=all.length?all.map(n=>'<div style="padding:11px 12px;border-bottom:1px solid #eee;display:flex;gap:8px;line-height:1.7;opacity:'+(hid.includes(n.id)?.55:1)+'"><span>'+(ic[n.type]||'📢')+'</span><div style="flex:1">'+esc(n.text)+(n.renew&&ph?'<br><a target="_blank" style="color:#25a244;font-weight:700" href="https://wa.me/'+ph+'?text='+encodeURIComponent('السلام عليكم، أرغب بتجديد اشتراك منشأة ('+(TEN.name||'')+')')+'">🔄 تجديد الاشتراك</a>':'')+'</div></div>').join(''):'<div style="padding:20px;text-align:center;color:#888">لا توجد تنبيهات</div>';
+if(all.some(n=>!hid.includes(n.id)))h+='<button onclick="(window.NTALL||[]).forEach(n=>ntfHide(n.id))" style="width:100%;border:0;background:#f4f4f4;padding:10px;font-size:14px">تعليم الكل كمقروء</button>';p.innerHTML=h}
+document.addEventListener('click',e=>{const p=document.getElementById('bellP');if(p&&p.style.display==='block'&&!p.contains(e.target)&&!e.target.closest('#bellBtn'))p.style.display='none'});
 </script>
 </body>
 </html>
