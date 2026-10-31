@@ -75,7 +75,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
 </style>
 <link rel="icon" type="image/svg+xml" href="brand/favicon.svg"><link rel="icon" type="image/png" sizes="32x32" href="brand/favicon-32.png"><link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
 <meta name="theme-color" content="#E76F51"><meta property="og:type" content="website"><meta property="og:site_name" content="حجوزات"><meta property="og:locale" content="ar_SA"><meta property="og:title" content="حجوزات - نظام إدارة الحجوزات"><meta property="og:description" content="أدِر حجوزات منشأتك وعملاءك ومصاريفك من مكان واحد"><meta property="og:image" content="https://raw.githubusercontent.com/cooB3/gbj/main/og-image.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://raw.githubusercontent.com/cooB3/gbj/main/og-image.png">
-<link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="حجوزات"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
 <body>
 <style>#ntf{position:fixed;top:0;left:0;right:0;z-index:9500}.nt{display:flex;align-items:center;gap:8px;padding:9px 14px;color:#fff;font-size:13px;line-height:1.6;animation:ntd .5s}.nt b{flex:1}.nt a,.nt button{background:rgba(255,255,255,.22);border:0;color:#fff;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:12px;text-decoration:none}@keyframes ntd{from{transform:translateY(-100%)}to{transform:none}}</style><div id="ntf"></div>
@@ -114,7 +114,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
   <input id="tu" type="text" autocapitalize="off" placeholder="البريد الإلكتروني أو اسم المستخدم" autocomplete="username" dir="ltr">
   <div style="position:relative"><input id="tp" data-eye="1" type="password" placeholder="كلمة المرور" autocomplete="current-password" style="padding-left:42px"><button type="button" onclick="togPw()" id="eye" style="position:absolute;left:8px;top:7px;background:none;border:0;cursor:pointer;color:#718093;font-size:16px"><i class="fa-solid fa-eye"></i></button></div>
   <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin:2px 0 8px;cursor:pointer"><input type="checkbox" id="tr" checked style="width:auto"> تذكرني على هذا الجهاز</label>
-  <div class="err" id="te"></div><button class="btn" onclick="tLogin()">دخول</button>
+  <div class="err" id="te"></div><button class="btn" onclick="tLogin()">دخول</button><button class="btn inst" onclick="instApp()" style="display:none;background:#fff;color:#E76F51;border:1px solid #E76F51;margin-top:8px">📲 إضافة التطبيق للشاشة الرئيسية</button>
   <div style="margin-top:8px"><a href="#" onclick="forgot();return false" style="font-size:12px;color:#2e86de">نسيت كلمة المرور؟</a></div>
   <button class="btn b2" style="margin-top:8px" onclick="showReg(1)">حساب جديد</button>
  </div>
@@ -151,6 +151,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
   <li data-t="support" data-f="support"><i class="fa-solid fa-headset"></i> الدعم الفني</li>
   <li data-t="account"><i class="fa-solid fa-user-gear"></i> حسابي وبيانات المنشأة</li>
  </ul>
+ <button class="inst" onclick="instApp()" style="display:none;width:calc(100% - 24px);margin:10px 12px;background:#E76F51;color:#fff;border:0;border-radius:10px;padding:10px;font-size:14px">📲 إضافة التطبيق للشاشة الرئيسية</button>
  <div class="cp">إدارة مطورة | تطوير FAHAD ALMUKLFI<br>جميع الحقوق محفوظة 2026</div>
 </aside>
 
@@ -875,6 +876,13 @@ function bellDraw(){const p=document.getElementById('bellP'),all=window.NTALL||[
 let h=all.length?all.map(n=>'<div style="padding:11px 12px;border-bottom:1px solid #eee;display:flex;gap:8px;line-height:1.7;opacity:'+(hid.includes(n.id)?.55:1)+'"><span>'+(ic[n.type]||'📢')+'</span><div style="flex:1">'+esc(n.text)+(n.renew&&ph?'<br><a target="_blank" style="color:#25a244;font-weight:700" href="https://wa.me/'+ph+'?text='+encodeURIComponent('السلام عليكم، أرغب بتجديد اشتراك منشأة ('+(TEN.name||'')+')')+'">🔄 تجديد الاشتراك</a>':'')+'</div></div>').join(''):'<div style="padding:20px;text-align:center;color:#888">لا توجد تنبيهات</div>';
 if(all.some(n=>!hid.includes(n.id)))h+='<button onclick="(window.NTALL||[]).forEach(n=>ntfHide(n.id))" style="width:100%;border:0;background:#f4f4f4;padding:10px;font-size:14px">تعليم الكل كمقروء</button>';p.innerHTML=h}
 document.addEventListener('click',e=>{const p=document.getElementById('bellP');if(p&&p.style.display==='block'&&!p.contains(e.target)&&!e.target.closest('#bellBtn'))p.style.display='none'});
+</script>
+<script>
+function instApp(){if(typeof _ip!=='undefined'&&_ip){_ip.prompt();return}
+const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+alert(ios?'لإضافة التطبيق على الآيفون:\n1) افتح الرابط في Safari\n2) اضغط زر المشاركة ⬆️\n3) اختر «إضافة إلى الشاشة الرئيسية»':'لإضافة التطبيق على جوالك:\n1) افتح الرابط في Chrome\n2) اضغط القائمة ⋮\n3) اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»')}
+(function(){const st=matchMedia('(display-mode: standalone)').matches||navigator.standalone;if(!st)document.querySelectorAll('.inst').forEach(b=>b.style.display='block')})();
+window.addEventListener('appinstalled',()=>document.querySelectorAll('.inst').forEach(b=>b.style.display='none'));
 </script>
 </body>
 </html>
