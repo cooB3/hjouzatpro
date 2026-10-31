@@ -72,42 +72,32 @@ th,td{padding:11px 9px;border-bottom:1px solid #f1f2f6;text-align:right;font-siz
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:700px){body{zoom:.86}input,select,textarea{font-size:19px!important;min-height:40px}button{min-height:38px}}
 body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!important}
-</style>
+
+#splash{position:fixed;inset:0;z-index:99999;background:#F6EBDD;color:#3D2B1F;display:flex;align-items:center;justify-content:center;transition:opacity .6s}
+#splash.out{opacity:0;pointer-events:none}
+#splash .sp-in{display:flex;flex-direction:column;align-items:center;gap:20px;padding:32px;text-align:center;max-width:420px}
+#splash .sp-in>*{animation:spu .7s ease both}
+#splash .sp-in>*:nth-child(2){animation-delay:.2s}#splash .sp-in>*:nth-child(3){animation-delay:.5s}#splash .sp-in>*:nth-child(4){animation-delay:.8s}
+#splash h1{margin:0;font-size:28px;line-height:1.6;font-weight:800}
+#splash .sp-sub{font-size:15px;opacity:.85}
+#splash .sp-bar{width:240px;height:8px;border-radius:6px;background:#E6D5BF;overflow:hidden}
+#splash .sp-bar i{display:block;height:100%;width:0;background:#E76F51;border-radius:6px}
+#splash .sp-pct{font-size:15px;font-weight:700}
+#splash .sp-by{position:absolute;bottom:34px;left:0;right:0;font-size:14px;line-height:1.7;opacity:.9;text-align:center}
+@keyframes spu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}</style>
 <link rel="icon" type="image/svg+xml" href="brand/favicon.svg"><link rel="icon" type="image/png" sizes="32x32" href="brand/favicon-32.png"><link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
 <meta name="theme-color" content="#E76F51"><meta property="og:type" content="website"><meta property="og:site_name" content="حجوزات"><meta property="og:locale" content="ar_SA"><meta property="og:title" content="حجوزات - نظام إدارة الحجوزات"><meta property="og:description" content="أدِر حجوزات منشأتك وعملاءك ومصاريفك من مكان واحد"><meta property="og:image" content="https://raw.githubusercontent.com/cooB3/gbj/main/og-image.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://raw.githubusercontent.com/cooB3/gbj/main/og-image.png">
 <link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="حجوزات"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
 <body>
 <style>#ntf{position:fixed;top:0;left:0;right:0;z-index:9500}.nt{display:flex;align-items:center;gap:8px;padding:9px 14px;color:#fff;font-size:13px;line-height:1.6;animation:ntd .5s}.nt b{flex:1}.nt a,.nt button{background:rgba(255,255,255,.22);border:0;color:#fff;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:12px;text-decoration:none}@keyframes ntd{from{transform:translateY(-100%)}to{transform:none}}</style><div id="ntf"></div>
-<style>
-#splash{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);color:#fff;text-align:center;padding:20px;transition:opacity .7s,visibility .7s;overflow:hidden}
-#splash.out{opacity:0;visibility:hidden}
-#splash:before,#splash:after{content:"";position:absolute;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(84,160,255,.35),transparent 70%);animation:spf 7s ease-in-out infinite}
-#splash:before{top:-90px;right:-90px}#splash:after{bottom:-110px;left:-90px;animation-delay:-3s;background:radial-gradient(circle,rgba(16,172,132,.35),transparent 70%)}
-@keyframes spf{0%,100%{transform:scale(1) translate(0,0)}50%{transform:scale(1.25) translate(20px,15px)}}
-.sp-in{position:relative;z-index:1;max-width:420px;width:100%}
-.sp-logo{font-size:64px;display:inline-block;animation:spb 1.6s ease-in-out infinite;filter:drop-shadow(0 8px 14px rgba(0,0,0,.4))}
-@keyframes spb{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-.sp-in h1{font-size:23px;margin:14px 0 6px;line-height:1.6;animation:spu .9s both}
-.sp-in h1 span{display:block;font-size:30px;background:linear-gradient(90deg,#54a0ff,#10ac84,#feca57,#54a0ff);background-size:250% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sps 3s linear infinite}
-@keyframes sps{to{background-position:250% center}}
-@keyframes spu{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-.sp-sub{font-size:13px;opacity:.8;margin-bottom:26px;animation:spu .9s .3s both}
-.sp-bar{height:10px;background:rgba(255,255,255,.15);border-radius:20px;overflow:hidden;animation:spu .9s .5s both}
-.sp-bar i{display:block;height:100%;width:0;border-radius:20px;background:linear-gradient(90deg,#54a0ff,#10ac84);box-shadow:0 0 14px rgba(84,160,255,.8)}
-.sp-pct{font-size:12px;margin-top:8px;opacity:.85;font-variant-numeric:tabular-nums}
-.sp-by{margin-top:30px;font-size:14px;line-height:1.9;animation:spu .9s .8s both}.sp-by b{color:#feca57;font-size:17px}.sp-by span{font-size:12px;opacity:.8;letter-spacing:.5px}
-.sp-rt{margin-top:10px;font-size:11px;opacity:.65;animation:spu .9s 1s both}
-@media(prefers-reduced-motion:reduce){#splash *,#splash:before,#splash:after{animation:none!important}}
-</style>
+
 <script>if(sessionStorage.getItem('sp')){window.__nosp=1;document.write('<style>#splash{display:none!important}</style>')}else sessionStorage.setItem('sp','1')</script>
-<div id="splash"><div class="sp-in"><div class="sp-logo">🏡</div>
-<h1>أهلاً بك في برنامج<span>حجوزات المطوّر</span></h1>
-<div class="sp-sub">نظامك الذكي لإدارة حجوزات الشاليهات والاستراحات</div>
-<div class="sp-bar"><i id="spBar"></i></div><div class="sp-pct" id="spPct">0%</div>
-<div class="sp-by">برمجة <b>فهد المخلفي</b><br><span dir="ltr">Programmed by Fahad Almukhlifi</span></div>
-<div class="sp-rt">© جميع الحقوق محفوظة</div></div></div>
-<script>(function(){var t0=Date.now(),D=3200,b=document.getElementById('spBar'),p=document.getElementById('spPct'),s=document.getElementById('splash');function f(){var r=Math.min(1,(Date.now()-t0)/D),e=1-Math.pow(1-r,2);b.style.width=(e*100)+'%';p.textContent=Math.round(e*100)+'%';if(r<1)requestAnimationFrame(f);else{s.classList.add('out');setTimeout(function(){s.remove()},800)}}f()})();</script>
+<div id="splash"><div class="sp-in"><svg viewBox="0 0 100 100" width="120" height="120" role="img" aria-label="شعار حجوزات"><path d="M8 50 L50 14 L92 50" fill="none" stroke="#E76F51" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><rect x="22" y="48" width="56" height="40" rx="9" fill="#E76F51"/><polyline points="38,68 47,77 63,58" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<div><h1>أهلاً بك في برنامج<br>إدارة حجوزات العملاء</h1><div class="sp-sub" style="margin-top:8px">لأصحاب الشاليهات والاستراحات</div></div>
+<div><div class="sp-bar"><i id="spBar"></i></div><div class="sp-pct" id="spPct" style="margin-top:10px">0%</div></div></div>
+<div class="sp-by">برمجة <b>فهد المخلفي</b><br><span dir="ltr">Programmed by Fahad Almukhlifi</span><br>© جميع الحقوق محفوظة</div></div>
+<script>(function(){var t0=Date.now(),D=5200,b=document.getElementById('spBar'),p=document.getElementById('spPct'),s=document.getElementById('splash');function f(){var r=Math.min(1,(Date.now()-t0)/D);b.style.width=(r*100)+'%';p.textContent=Math.round(r*100)+'%';if(r<1)requestAnimationFrame(f);else{s.classList.add('out');setTimeout(function(){s.remove()},700)}}f()})();</script>
 <div id="tl"><div class="lb">
  <h2 id="lgT"></h2><p id="lgS" style="margin-bottom:16px"></p>
  <div id="loginBox">
