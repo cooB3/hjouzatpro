@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 :root{--g1:linear-gradient(135deg,#FF6B6B,#FF8E53);--g2:linear-gradient(135deg,#1dd1a1,#10ac84);--g3:linear-gradient(135deg,#54a0ff,#2e86de);--g4:linear-gradient(135deg,#feca57,#ff9f43);--dark:#1e272e;--bg:#f5f6fa;--tx:#2f3640;--or:#ff9f43}
@@ -115,7 +116,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
   <div class="ph" style="margin-bottom:10px"><span>+966</span><input id="rP" type="tel" maxlength="10" placeholder="5xxxxxxxx"></div>
   <input id="rE" type="email" placeholder="البريد الإلكتروني (للدخول واستعادة كلمة المرور)" dir="ltr">
   <input id="rW" type="password" placeholder="كلمة المرور (6 أحرف على الأقل)">
-  <select id="rPl" style="margin-bottom:10px"></select>
+  <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:10px"><select id="rPl" style="flex:1;margin:0"></select><button type="button" onclick="plansPop()" title="عرض الباقات ومميزاتها" aria-label="عرض الباقات ومميزاتها" style="flex:none;width:28px;height:28px;min-height:28px;border-radius:50%;border:1px solid #E76F51;background:#fff;color:#E76F51;font-weight:800;font-size:15px;padding:0;margin-top:10px;line-height:1">؟</button></div>
   <div class="err" id="re"></div><button class="btn b3" onclick="regSubmit()">إرسال طلب التسجيل</button>
   <button class="btn b5" style="margin-top:8px" onclick="showReg(0)">لدي حساب</button>
  </div>
@@ -230,7 +231,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
    <input id="search" placeholder="ابحث بالاسم، الجوال، أو التاريخ..." style="margin-bottom:10px">
    <div class="row" style="margin:0 0 12px">
     <button class="btn b3" onclick="exportXls()"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
-    <label class="btn b3" data-ft="excel" style="cursor:pointer;margin:0"><i class="fa-solid fa-file-excel"></i> استيراد إكسل<input type="file" accept=".xlsx,.xls,.csv" onchange="importXls(event)" style="display:none"></label>
+    <label class="btn b3" data-ft="import" style="cursor:pointer;margin:0"><i class="fa-solid fa-file-excel"></i> استيراد إكسل<input type="file" accept=".xlsx,.xls,.csv" onchange="importXls(event)" style="display:none"></label>
    </div>
    <div class="tr"><table><thead><tr><th>#</th><th>المستأجر</th><th>الجوال</th><th>التاريخ</th><th>الفترة</th><th>القسم</th><th>الإيجار</th><th>الواصل</th><th>المتبقي</th><th>الحالة</th></tr></thead><tbody id="recBody"></tbody></table></div>
   </div>
@@ -265,7 +266,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
   <div class="card"><h3>النسخ الاحتياطي والأمان</h3>
    <p style="font-size:12px;color:#718093;margin-bottom:14px">احفظ نسخة JSON من حساباتك واسترجعها بأي وقت.</p>
    <button class="btn b3" onclick="expJson()"><i class="fa-solid fa-download"></i> تصدير نسخة JSON</button>
-   <label class="btn b2" style="cursor:pointer;margin-top:10px"><i class="fa-solid fa-upload"></i> استعادة نسخة JSON<input type="file" accept=".json" onchange="impJson(event)" style="display:none"></label>
+   <label class="btn b2" data-ft="import" style="cursor:pointer;margin-top:10px"><i class="fa-solid fa-upload"></i> استعادة نسخة JSON<input type="file" accept=".json" onchange="impJson(event)" style="display:none"></label>
   </div>
  </section>
 <section id="reminders" class="tab"><div class="ttl">تذكيرات واتساب</div>
@@ -350,7 +351,7 @@ const TEN=(SA.tenants||[]).find(t=>String(t.id)===TID);
 const NAME=TEN?TEN.name:'';
 const ME=(SA.users||[]).find(u=>String(u.id)===sessionStorage.getItem('uid')&&u.tenant==TID)||(SA.users||[]).find(u=>u.tenant==TID&&u.role==='owner');
 let PL=(SA.plans||[]).find(p=>TEN&&p.id==TEN.plan);
-const HAS=k=>{if(sessionStorage.getItem('sa'))return true;const basic=PL&&/^(الأساسية|الاساسية)$/.test(String(PL.name||'').trim());const fromPlan=!!(PL&&PL.f&&PL.f[k])&&!(basic&&(k==='excel'||k==='backup'));return fromPlan||!!(TEN&&(TEN.addons||[]).includes(k))};
+const HAS=k=>{const ad=!!(TEN&&(TEN.addons||[]).includes(k));if(k==='import')return ad;if(sessionStorage.getItem('sa'))return true;const basic=PL&&/^(الأساسية|الاساسية)$/.test(String(PL.name||'').trim());const fromPlan=!!(PL&&PL.f&&PL.f[k])&&!(basic&&k==='backup');return fromPlan||ad};
 const persistSA=()=>localStorage.setItem('sa_cache',JSON.stringify(SA));
 $('tl').style.display=TEN?'none':'flex';
 let SUPPORT_PH='',LASTREG=null;
@@ -362,8 +363,8 @@ function fillLogin(S){const esc=x=>String(x??'').replace(/[&<>"']/g,'');const st
 fillLogin(SA.settings);db.ref('system/settings').once('value').then(x=>{if(x.val())fillLogin(x.val())}).catch(()=>{});
 function normPhone(p){let d=String(p||'').replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);if(d.startsWith('966'))return d;if(d.startsWith('0'))d=d.slice(1);return d?'966'+d:''}
 function localPhone(p){const d=String(p||'').replace(/\D/g,'');return d.startsWith('966')?'0'+d.slice(3):d}
-function fillPlans(L){$('rPl').innerHTML=(L||[]).map(p=>`<option value="${p.id}">${String(p.name).replace(/[<>&"]/g,'')} - ${p.price} ر.س/شهر</option>`).join('')||'<option value="0">سيُحدد لاحقاً</option>'}
-fillPlans(SA.plans);db.ref('plans').once('value').then(x=>{const o=x.val();if(o)fillPlans(Object.entries(o).map(([id,p])=>({id,name:p.name,price:p.price})))}).catch(()=>{});
+function fillPlans(L){window.PUBPL=L||[];$('rPl').innerHTML=(L||[]).map(p=>`<option value="${p.id}">${String(p.name).replace(/[<>&"]/g,'')} - ${p.price} ر.س/سنوياً</option>`).join('')||'<option value="0">سيُحدد لاحقاً</option>'}
+db.ref('modules').once('value').then(x=>{const o=x.val();if(o){const m={};Object.entries(o).forEach(([k,v])=>{if(k!=='import'&&k!=='excel'&&v&&v.name)m[k]=String(v.name)});window.FLAB2=m}}).catch(()=>{});fillPlans(SA.plans);db.ref('plans').once('value').then(x=>{const o=x.val();if(o)fillPlans(Object.entries(o).map(([id,p])=>({id,name:p.name,price:p.price,units:p.units,users:p.users,f:p.features||{}})))}).catch(()=>{});
 function showReg(on){$('loginBox').style.display=on?'none':'block';$('regBox').style.display=on===1?'block':'none';$('regDone').style.display=on===2?'block':'none';$('te').textContent=''}
 async function regSubmit(){
  const v=id=>$(id).value.trim(),e=$('re'),bad=m=>{e.textContent=m};
@@ -618,12 +619,33 @@ function repPdf(){$('repPrint').querySelector('h2').textContent=NAME+' - الت�
 
 /* excel + json */
 function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click()}
-function exportXls(){
- const sm=+$('recMonth').value;
- const rows=bookings.filter(b=>b.date&&+String(b.date).slice(5,7)-1===sm).map((b,i)=>({'م':i+1,'اسم المستأجر':b.name,'رقم الجوال':phoneFmt(b.phone),'تاريخ الحجز':b.date,'الفترة':b.period,'القسم':b.section,'إجمالي الإيجار':num(b.price),'المبلغ الواصل':num(b.paid),'المتبقي':rem(b),'حالة الحجز':b.status}));
+function exportXlsPlain(sm,list){
+ const rows=list.map((b,i)=>({'م':i+1,'اسم المستأجر':b.name,'رقم الجوال':phoneFmt(b.phone),'تاريخ الحجز':b.date,'الفترة':b.period,'القسم':b.section,'إجمالي الإيجار':num(b.price),'المبلغ الواصل':num(b.paid),'المتبقي':rem(b),'حالة الحجز':b.status}));
  const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();wb.Workbook={Views:[{RTL:true}]};
- XLSX.utils.book_append_sheet(wb,ws,'حجوزات '+MN[sm]);XLSX.writeFile(wb,`سجل_حجوزات_${MN[sm]}_${NAME}.xlsx`)}
-function importXls(ev){if(!HAS('excel')){alert('هذه الميزة إضافية وغير مفعّلة في باقتك. تواصل مع الدعم لتفعيلها.');return}
+ XLSX.utils.book_append_sheet(wb,ws,'حجوزات '+MN[sm]);XLSX.writeFile(wb,`سجل_حجوزات_${MN[sm]}.xlsx`)}
+async function exportXls(){
+ const sm=+$('recMonth').value,list=bookings.filter(b=>b.date&&+String(b.date).slice(5,7)-1===sm);
+ if(!list.length){alert('لا توجد حجوزات في شهر '+MN[sm]);return}
+ if(typeof ExcelJS==='undefined'){exportXlsPlain(sm,list);return}
+ const C=10,wb=new ExcelJS.Workbook();wb.creator=NAME||'حجوزات';
+ const ws=wb.addWorksheet('حجوزات '+MN[sm],{views:[{rightToLeft:true,state:'frozen',ySplit:3,showGridLines:false}]});
+ [6,26,16,14,12,12,16,16,14,14].forEach((w,i)=>ws.getColumn(i+1).width=w);
+ const th={style:'thin',color:{argb:'FFBFA98F'}},bd={top:th,left:th,bottom:th,right:th},F=(c)=>({type:'pattern',pattern:'solid',fgColor:{argb:c}}),ft=(z,b,c)=>({name:'Tahoma',size:z,bold:b,color:{argb:c}}),ctr={horizontal:'center',vertical:'middle',wrapText:true};
+ ws.mergeCells(1,1,1,C);const t=ws.getCell(1,1);t.value='سجلات شهر '+MN[sm]+(NAME?' — '+NAME:'');t.font=ft(18,true,'FFFFFFFF');t.fill=F('FFC8553A');t.alignment=ctr;ws.getRow(1).height=38;
+ const sum=k=>list.reduce((a,b)=>a+(k==='p'?num(b.price):k==='d'?num(b.paid):rem(b)),0),f=n=>Number(n).toLocaleString('en-US');
+ ws.mergeCells(2,1,2,C);const u=ws.getCell(2,1);u.value='عدد الحجوزات: '+list.length+'   |   إجمالي الإيجار: '+f(sum('p'))+'   |   الواصل: '+f(sum('d'))+'   |   المتبقي: '+f(sum('r'));u.font=ft(12,true,'FF3D2B1F');u.fill=F('FFF6EBDD');u.alignment=ctr;ws.getRow(2).height=26;
+ ['م','اسم المستأجر','رقم الجوال','تاريخ الحجز','الفترة','القسم','إجمالي الإيجار','المبلغ الواصل','المتبقي','حالة الحجز'].forEach((h,i)=>{const c=ws.getCell(3,i+1);c.value=h;c.font=ft(12,true,'FFFFFFFF');c.fill=F('FF3D2B1F');c.alignment=ctr;c.border=bd});ws.getRow(3).height=28;
+ list.forEach((b,i)=>{const r=4+i,v=[i+1,b.name,phoneFmt(b.phone),b.date,b.period,b.section,num(b.price),num(b.paid),rem(b),b.status];
+  v.forEach((x,k)=>{const c=ws.getCell(r,k+1);c.value=x;c.border=bd;c.alignment=ctr;c.font=ft(12,false,'FF3D2B1F');if(i%2)c.fill=F('FFFBF6EF');if(k>=6&&k<=8)c.numFmt='#,##0'});
+  const rc=ws.getCell(r,9);rc.font=ft(12,true,num(rem(b))>0?'FFC62828':'FF10845F');
+  const st=String(b.status||''),sc=ws.getCell(r,10);sc.font=ft(12,true,/ملغ|ملغي/.test(st)?'FFC62828':/مؤكد/.test(st)?'FF10845F':'FF8A6D3B');ws.getRow(r).height=24});
+ const last=3+list.length,tr=last+1;ws.mergeCells(tr,1,tr,6);const tl=ws.getCell(tr,1);tl.value='الإجمالي';
+ [[7,'G','p'],[8,'H','d'],[9,'I','r']].forEach(([k,L,w])=>{ws.getCell(tr,k).value={formula:`SUM(${L}4:${L}${last})`,result:sum(w)};ws.getCell(tr,k).numFmt='#,##0'});
+ for(let k=1;k<=C;k++){const c=ws.getCell(tr,k);c.font=ft(13,true,'FF3D2B1F');c.fill=F('FFF2B544');c.alignment=ctr;c.border=bd}ws.getRow(tr).height=28;
+ ws.pageSetup={orientation:'landscape',paperSize:9,fitToPage:true,fitToWidth:1,fitToHeight:0,horizontalCentered:true,margins:{left:.4,right:.4,top:.6,bottom:.6,header:.3,footer:.3},printArea:'A1:J'+tr,printTitlesRow:'3:3'};
+ ws.headerFooter={oddFooter:'&Cصفحة &P من &N'};
+ const buf=await wb.xlsx.writeBuffer();dl(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),`سجل_حجوزات_${MN[sm]}_${String(NAME||'').replace(/[\\/:*?"<>|]/g,'')}.xlsx`)}
+function importXls(ev){if(!HAS('import')){alert('الاستيراد خدمة استثنائية تُفعَّل من الإدارة عند الحاجة. تواصل مع الدعم.');return}
  const f=ev.target.files[0];if(!f)return;const r=new FileReader();
  r.onload=e=>{try{
   const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
@@ -634,7 +656,7 @@ function importXls(ev){if(!HAS('excel')){alert('هذه الميزة إضافية
   save();alert('تم الاستيراد بنجاح!')}catch(err){alert('حدث خطأ أثناء قراءة الملف.')}};
  r.readAsArrayBuffer(f);ev.target.value=''}
 function expJson(){if(!HAS('backup')){alert('هذه الميزة إضافية وغير مفعّلة في باقتك. تواصل مع الدعم لتفعيلها.');return}dl(new Blob([JSON.stringify({bookings,expenses},null,2)],{type:'application/json'}),`نسخة_احتياطية_${NAME}.json`)}
-function impJson(ev){if(!HAS('backup')){alert('هذه الميزة إضافية وغير مفعّلة في باقتك. تواصل مع الدعم لتفعيلها.');return}
+function impJson(ev){if(!HAS('import')){alert('الاستيراد خدمة استثنائية تُفعَّل من الإدارة عند الحاجة. تواصل مع الدعم.');return}
  const f=ev.target.files[0];if(!f)return;const r=new FileReader();
  r.onload=e=>{try{const d=JSON.parse(e.target.result);if(Array.isArray(d.bookings))bookings=d.bookings.slice(0,5000).map(sanB).filter(Boolean);if(Array.isArray(d.expenses))expenses=d.expenses.slice(0,5000).map(sanE).filter(Boolean);save();alert('تمت استعادة البيانات بنجاح!')}catch(err){alert('حدث خطأ في ملف JSON.')}};
  r.readAsText(f)}
@@ -884,6 +906,21 @@ const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='
 alert(ios?'لإضافة التطبيق على الآيفون:\n1) افتح الرابط في Safari\n2) اضغط زر المشاركة ⬆️\n3) اختر «إضافة إلى الشاشة الرئيسية»':'لإضافة التطبيق على جوالك:\n1) افتح الرابط في Chrome\n2) اضغط القائمة ⋮\n3) اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»')}
 (function(){const st=matchMedia('(display-mode: standalone)').matches||navigator.standalone;if(!st)document.querySelectorAll('.inst').forEach(b=>b.style.display='block')})();
 window.addEventListener('appinstalled',()=>document.querySelectorAll('.inst').forEach(b=>b.style.display='none'));
+</script>
+<script>
+const FLAB={"dashboard": "لوحة المؤشرات", "new": "تسجيل حجز جديد", "calendar": "التقويم الذكي", "records": "سجل الحجوزات", "expenses": "المصروفات والصيانة", "reports": "التقرير المالي", "backup": "النسخ الاحتياطي (تصدير نسخة)", "pdf": "سندات PDF", "whatsapp": "إرسال واتساب", "multi": "عدة وحدات وفروع", "reminders": "تذكيرات واتساب تلقائية", "customers": "سجل العملاء", "staff": "إدارة الموظفين والصلاحيات", "branding": "تخصيص الهوية", "lang": "تعدد اللغات", "support": "دعم فني بأولوية وإعداد أولي"};
+function plansPop(){const L=window.PUBPL||[];if(!L.length){alert('سيتم عرض الباقات قريباً');return}
+const sel=document.getElementById('rPl').value,o=document.createElement('div');o.id='plPop';o.style.cssText='position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:14px';
+const box=document.createElement('div');box.style.cssText='background:#F6EBDD;color:#3D2B1F;border-radius:18px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:16px;box-shadow:0 10px 40px #0006;animation:pop .18s ease-out';
+let h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><b style="font-size:19px">الباقات ومميزاتها</b><button type="button" id="plX" aria-label="إغلاق" style="background:none;border:0;font-size:24px;min-height:0;padding:0 6px;color:#3D2B1F">✕</button></div>';
+h+=L.map(p=>{const f=Object.keys(p.f||{}).filter(k=>p.f[k]&&(window.FLAB2||FLAB)[k]).map(k=>(window.FLAB2||FLAB)[k]);const hot=String(p.id)===String(sel);
+return '<div style="background:#fff;border:'+(hot?'2px solid #E76F51':'1px solid #E6D5BF')+';border-radius:14px;padding:14px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:18px">'+esc(p.name)+'</b><span style="color:#C8553A;font-weight:800">'+esc(p.price)+' <small style="font-weight:500">ر.س / سنوياً</small></span></div>'
++'<div style="font-size:14px;color:#6B5646;margin:6px 0">'+(p.units?'الوحدات: '+esc(p.units)+'  ':'')+(p.users?' • المستخدمون: '+esc(p.users):'')+'</div>'
++'<div style="font-size:14px;line-height:1.9">'+(f.length?f.map(x=>'<div>✓ '+esc(x)+'</div>').join(''):'<div style="color:#888">التفاصيل سيحددها فريق الدعم</div>')+'</div>'
++'<button type="button" data-pid="'+esc(p.id)+'" style="width:100%;margin-top:10px;background:#E76F51;color:#fff;border:0;border-radius:10px;padding:9px;font-weight:800">اختيار هذه الباقة</button></div>'}).join('');
+box.innerHTML=h;o.appendChild(box);document.body.appendChild(o);
+const x=()=>o.remove();o.onclick=e=>{if(e.target===o)x()};box.querySelector('#plX').onclick=x;
+box.querySelectorAll('[data-pid]').forEach(b=>b.onclick=()=>{document.getElementById('rPl').value=b.getAttribute('data-pid');x()})}
 </script>
 </body>
 </html>
