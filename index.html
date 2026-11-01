@@ -390,7 +390,7 @@ async function tLogin(){
  if(!em||!pw){E('أدخل البريد وكلمة المرور');return}
  $('te').textContent='';
  if(!em.includes('@')){try{const sn=await db.ref('usernames/'+em.toLowerCase()).once('value');if(!sn.val()){E('اسم المستخدم غير موجود');return}em=sn.val()}catch(z){E(fbErr(z));return}}
- window._lc={e:em,p:pw};auth.setPersistence($('tr').checked?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION).catch(()=>auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)).catch(()=>{}).then(()=>auth.signInWithEmailAndPassword(em,pw)).catch(x=>E(fbErr(x)))}
+ auth.setPersistence($('tr').checked?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION).catch(()=>auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)).catch(()=>{}).then(()=>auth.signInWithEmailAndPassword(em,pw)).catch(x=>E(fbErr(x)))}
 async function forgot(){const em=$('tu').value.trim(),ph=normPhone(SUPPORT_PH);if(!ph){alert('تواصل مع الدعم الفني لإعادة تعيين كلمة المرور');return}window.open('https://wa.me/'+ph+'?text='+encodeURIComponent('السلام عليكم، نسيت كلمة المرور لحسابي'+(em?' ('+em+')':'')+' في نظام حجوزات. أرجو إعادة تعيينها.'),'_blank')}
 async function buildCache(u){
  const g=async p=>(await db.ref(p).once('value')).val();
@@ -406,12 +406,12 @@ async function buildCache(u){
  if(!prev){if(t.active!==true)return bad('حساب المنشأة موقوف، تواصل مع الإدارة');if((t.endTs||0)<Date.now())return bad('انتهى اشتراك المنشأة، تواصل معنا للتجديد')}
  const [pl,st]=await Promise.all([g('plans'),g('system/settings')]);
  localStorage.setItem('sa_cache',JSON.stringify({tenants:[{id:tid,code:t.code,name:t.name,type:t.type,owner:t.owner,phone:t.phone,address:t.address||'',plan:t.planId,end:t.end,on:t.active===true,addons:Object.keys(t.addons||{}),gift:!!t.gift}],users:[me],plans:Object.entries(pl||{}).map(([id,p])=>({id,name:p.name,price:p.price,units:p.units,users:p.users,f:p.features||{}})),settings:st||{},tickets:SA.tickets||[]}));
- sessionStorage.setItem('tid',tid);sessionStorage.setItem('uid',u.uid);if(prev)sessionStorage.setItem('sa','1');try{if(window._lc)sessionStorage.setItem('_rc',btoa(unescape(encodeURIComponent(JSON.stringify(window._lc)))))}catch(e){}
+ sessionStorage.setItem('tid',tid);sessionStorage.setItem('uid',u.uid);if(prev)sessionStorage.setItem('sa','1');
  location.reload()}
 auth.onAuthStateChanged(async u=>{
  if(window._signing)return;
- if(u&&!window._viaRc){try{sessionStorage.removeItem('_rc')}catch(e){}}
- if(!u){if(TEN){setTimeout(async()=>{if(auth.currentUser)return;const rc=sessionStorage.getItem('_rc');if(rc){try{const c=JSON.parse(decodeURIComponent(escape(atob(rc))));window._viaRc=true;await auth.signInWithEmailAndPassword(c.e,c.p);return}catch(e){try{sessionStorage.removeItem('_rc')}catch(x){}}}try{localStorage.setItem('authlost',String(Date.now()))}catch(e){}Object.keys(localStorage).forEach(k=>{if(k==='sa_cache'||(k.indexOf('cruise_')===0&&!/receipt_settings|brand/.test(k)))localStorage.removeItem(k)});sessionStorage.removeItem('tid');sessionStorage.removeItem('uid');sessionStorage.removeItem('sa');location.reload()},1200)}return}
+ try{sessionStorage.removeItem('_rc')}catch(e){}
+ if(!u){if(TEN){setTimeout(async()=>{if(auth.currentUser)return;try{localStorage.setItem('authlost',String(Date.now()))}catch(e){}Object.keys(localStorage).forEach(k=>{if(k==='sa_cache'||(k.indexOf('cruise_')===0&&!/receipt_settings|brand/.test(k)))localStorage.removeItem(k)});sessionStorage.removeItem('tid');sessionStorage.removeItem('uid');sessionStorage.removeItem('sa');location.reload()},1200)}return}
  if(TEN&&sessionStorage.getItem('uid')===u.uid&&(!qT||qT===TID))return;
  try{await buildCache(u)}catch(x){$('te').style.color='#c62828';$('te').textContent=fbErr(x)}});
 function saveFac(){
@@ -448,6 +448,16 @@ function dual(d){if(!d)return'';try{return d+' ('+new Date(d).toLocaleDateString
 const phoneFmt=p=>'+966'+String(p).replace(/\D/g,'').replace(/^966/,'').replace(/^0/,'');
 const stCls=s=>s==='مؤكد'?'ok':'no';
 const secCls=s=>s==='نساء'?'nisah':s==='رجال'?'rijal':'qismain';
+const sid=v=>String(v==null?'':v).replace(/[^\w.+-]/g,'');
+const _s=(v,n)=>String(v==null?'':v).replace(/[<>"'`\\]/g,'').replace(/[\u0000-\u001f]/g,' ').trim().slice(0,n);
+const _n=v=>{v=Number(v);return isFinite(v)?v:0};
+const _d=v=>{v=String(v==null?'':v).trim().replace(/\//g,'-').slice(0,10);const m=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);return m?m[1]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[3]).slice(-2):''};
+function _san(b){if(!b||typeof b!=='object'||Array.isArray(b))return null;const o={};
+ for(const k of Object.keys(b)){if(!/^\w{1,30}$/.test(k))continue;const v=b[k];if(typeof v==='number')o[k]=_n(v);else if(typeof v==='boolean')o[k]=v;else if(typeof v==='string')o[k]=_s(v,300)}
+ o.id=typeof b.id==='number'?_n(b.id):(String(b.id==null?'':b.id).replace(/[^\w-]/g,'').slice(0,40)||Date.now()+Math.floor(Math.random()*1e6));return o}
+function sanB(b){const o=_san(b);if(!o)return null;o.date=_d(b.date);if(!o.date)return null;o.name=_s(b.name,100)||'—';o.phone=String(b.phone==null?'':b.phone).replace(/[^\d+]/g,'').slice(0,15);return o}
+function sanE(e){const o=_san(e);if(!o)return null;if(o.date!==undefined)o.date=_d(e.date);return o}
+
 function save(){localStorage.setItem(K('cruise_bookings'),JSON.stringify(bookings));localStorage.setItem(K('cruise_expenses'),JSON.stringify(expenses));renderRec();renderExp();dash();fbSyncAll()}
 function tg(id){const e=$(id);e.style.display=e.style.display==='block'?'none':'block'}
 
@@ -509,7 +519,7 @@ function delBooking(id){const o=bookings.find(b=>String(b.id)===String(id));book
 $('ef').onsubmit=e=>{e.preventDefault();expenses.push({id:Date.now(),title:$('eTitle').value.trim(),category:$('eCat').value,amount:num($('eAmt').value),date:$('eDate').value});save();$('ef').reset();$('eDate').value=today();alert('تم تسجيل المصروف بنجاح!')};
 function delExp(id){if(confirm('حذف هذا البند؟')){expenses=expenses.filter(e=>String(e.id)!==String(id));save()}}
 function renderExp(){
- $('expBody').innerHTML=expenses.length?expenses.map(e=>`<tr><td><b>${esc(e.title)}</b></td><td>${esc(e.category)}</td><td style="color:#c62828;font-weight:700">${e.amount} ر.س</td><td>${e.date}</td><td><button class="btn no" style="width:auto;padding:6px 10px" onclick="delExp('${e.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:#a4b0be;padding:20px">لا توجد مصروفات مسجلة</td></tr>'}
+ $('expBody').innerHTML=expenses.length?expenses.map(e=>`<tr><td><b>${esc(e.title)}</b></td><td>${esc(e.category)}</td><td style="color:#c62828;font-weight:700">${e.amount} ر.س</td><td>${e.date}</td><td><button class="btn no" style="width:auto;padding:6px 10px" onclick="delExp('${sid(e.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:#a4b0be;padding:20px">لا توجد مصروفات مسجلة</td></tr>'}
 
 /* dashboard */
 function dash(){
@@ -520,13 +530,13 @@ function dash(){
  $('sExp').textContent=ex.toLocaleString()+' ر.س';$('sCol').textContent=co.toLocaleString()+' ر.س';$('sRem').textContent=(ex-co).toLocaleString()+' ر.س';$('sExs').textContent=te.toLocaleString()+' ر.س';$('sNet').textContent=(co-te).toLocaleString()+' ر.س';
  const tb=bookings.filter(b=>b.date===today());
  $('todayAlert').innerHTML=tb.length?`<div class="alert"><i class="fa-solid fa-bell"></i> يوجد ${tb.length} حجز اليوم باسم (${tb.map(b=>esc(b.name)).join('، ')})!</div>`:'';
- $('recent').innerHTML=bookings.length?bookings.slice(-4).reverse().map(b=>`<tr><td><b>${esc(b.name)}</b></td><td>${b.date}</td><td><span class="bd ${secCls(b.section)}">${b.section}</span></td><td>${b.price} ر.س</td><td style="color:#c62828;font-weight:700">${rem(b)} ر.س</td><td><span class="bd ${stCls(b.status)}">${esc(b.status)}</span></td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:#a4b0be;padding:15px">لا توجد حجوزات مسجلة</td></tr>'}
+ $('recent').innerHTML=bookings.length?bookings.slice(-4).reverse().map(b=>`<tr><td><b>${esc(b.name)}</b></td><td>${esc(b.date)}</td><td><span class="bd ${secCls(b.section)}">${esc(b.section)}</span></td><td>${b.price} ر.س</td><td style="color:#c62828;font-weight:700">${rem(b)} ر.س</td><td><span class="bd ${stCls(b.status)}">${esc(b.status)}</span></td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:#a4b0be;padding:15px">لا توجد حجوزات مسجلة</td></tr>'}
 
 /* records */
 function renderRec(){
  const sm=+$('recMonth').value;
  const list=bookings.filter(b=>b.date&&+String(b.date).slice(5,7)-1===sm).sort((a,b)=>a.date.localeCompare(b.date));
- $('recBody').innerHTML=list.length?list.map((b,i)=>`<tr><td>${i+1}</td><td><b style="color:#54a0ff;cursor:pointer;text-decoration:underline" onclick="openRc('${b.id}')">${esc(b.name)}</b><br><button onclick="openRc('${b.id}')" style="margin-top:4px;background:#54a0ff;color:#fff;border:0;border-radius:8px;padding:4px 10px;font-size:13px">📄 عرض السند</button>${b.unit?` <small>(${esc(b.unit)})</small>`:''}</td><td dir="ltr" style="text-align:right">${phoneFmt(b.phone)}</td><td>${b.date}</td><td>${esc(b.period)}</td><td><span class="bd ${secCls(b.section)}">${b.section}</span></td><td>${b.price} ر.س</td><td style="color:#10ac84;font-weight:700">${b.paid} ر.س</td><td style="color:#c62828;font-weight:700">${rem(b)} ر.س</td><td><span class="bd ${stCls(b.status)}">${esc(b.status)}</span></td></tr>`).join(''):`<tr><td colspan="10" style="text-align:center;color:#a4b0be;padding:20px">لا توجد حجوزات في شهر ${MN[sm]}.</td></tr>`;
+ $('recBody').innerHTML=list.length?list.map((b,i)=>`<tr><td>${i+1}</td><td><b style="color:#54a0ff;cursor:pointer;text-decoration:underline" onclick="openRc('${sid(b.id)}')">${esc(b.name)}</b><br><button onclick="openRc('${sid(b.id)}')" style="margin-top:4px;background:#54a0ff;color:#fff;border:0;border-radius:8px;padding:4px 10px;font-size:13px">📄 عرض السند</button>${b.unit?` <small>(${esc(b.unit)})</small>`:''}</td><td dir="ltr" style="text-align:right">${phoneFmt(b.phone)}</td><td>${esc(b.date)}</td><td>${esc(b.period)}</td><td><span class="bd ${secCls(b.section)}">${esc(b.section)}</span></td><td>${b.price} ر.س</td><td style="color:#10ac84;font-weight:700">${b.paid} ر.س</td><td style="color:#c62828;font-weight:700">${rem(b)} ر.س</td><td><span class="bd ${stCls(b.status)}">${esc(b.status)}</span></td></tr>`).join(''):`<tr><td colspan="10" style="text-align:center;color:#a4b0be;padding:20px">لا توجد حجوزات في شهر ${MN[sm]}.</td></tr>`;
  filt()}
 function filt(){const q=$('search').value.toLowerCase();document.querySelectorAll('#recBody tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(q)?'':'none')}
 $('search').onkeyup=filt;$('recMonth').onchange=renderRec;
@@ -547,12 +557,12 @@ function drawCal(){
 function dayDet(ds){
  const db=bookings.filter(b=>b.date===ds&&(!CU||(b.unit||'')===CU));
  $('cdet').style.display='block';
- $('cdet').innerHTML=`<b>التاريخ: ${dual(ds)}</b><hr style="margin:6px 0">`+db.map(b=>`• <b>${esc(b.name)}</b> (${phoneFmt(b.phone)})<br>• <span class="bd ${secCls(b.section)}">${b.section}</span> | ${esc(b.period)}<br>• المتبقي: ${rem(b)} ر.س | ${esc(b.status)}<br><button class="btn" style="width:auto;padding:4px 10px;font-size:11px;margin:6px 0 10px" onclick="editBooking('${b.id}')">تعديل</button><br>`).join('')}
+ $('cdet').innerHTML=`<b>التاريخ: ${dual(ds)}</b><hr style="margin:6px 0">`+db.map(b=>`• <b>${esc(b.name)}</b> (${phoneFmt(b.phone)})<br>• <span class="bd ${secCls(b.section)}">${esc(b.section)}</span> | ${esc(b.period)}<br>• المتبقي: ${rem(b)} ر.س | ${esc(b.status)}<br><button class="btn" style="width:auto;padding:4px 10px;font-size:11px;margin:6px 0 10px" onclick="editBooking('${sid(b.id)}')">تعديل</button><br>`).join('')}
 function checkDate(){
  const d=$('calSearch').value;if(!d){alert('اختر تاريخاً أولاً');return}
  const m=bookings.filter(b=>b.date===d);$('cdet').style.display='block';
  if(!m.length)$('cdet').innerHTML=`<b style="color:#2ed573">التاريخ (${dual(d)}) متاح تماماً.</b>`;
- else $('cdet').innerHTML=`<b style="color:#c62828">محجوز في (${dual(d)}):</b><br>`+m.map(b=>`• ${esc(b.name)} (${b.section}) - ${esc(b.status)}`).join('<br>')+(m.some(b=>b.section==='قسمين')?'':'<br><b style="color:#10ac84">متاح حجز القسم الآخر.</b>')}
+ else $('cdet').innerHTML=`<b style="color:#c62828">محجوز في (${dual(d)}):</b><br>`+m.map(b=>`• ${esc(b.name)} (${esc(b.section)}) - ${esc(b.status)}`).join('<br>')+(m.some(b=>b.section==='قسمين')?'':'<br><b style="color:#10ac84">متاح حجز القسم الآخر.</b>')}
 
 /* receipt */
 function applyRc(){
@@ -588,7 +598,7 @@ function invPdf(){html2pdf().set({margin:10,filename:'سند_حجز_'+(active?ac
 function sendWA(){
  if(!active)return;const b=active;
  const en=ld('cruise_lang','ar')==='en'&&HAS('lang');
- const msg=en?`*${NAME} - Booking Confirmation*\n\nDear ${b.name}\nDate: ${b.date} (${ENM[b.period]||b.period})\nSection: ${ENM[b.section]||b.section}\nTotal: ${b.price} SAR\nPaid: ${b.paid} SAR\nRemaining: ${rem(b)} SAR\nStatus: ${ENM[b.status]||b.status}\n\nThank you!`:`*${NAME} - سند تأكيد حجز*\n\nعزيزي المستأجر: ${b.name}\nتاريخ الحجز: ${dual(b.date)} (${b.period})\nالقسم: ${b.section}\nالمبلغ كامل: ${b.price} ر.س\nالمدفوع: ${b.paid} ر.س\nالمتبقي: ${rem(b)} ر.س\nالحالة: ${b.status}\n\nنتشرف بزيارتكم!`;
+ const msg=en?`*${NAME} - Booking Confirmation*\n\nDear ${b.name}\nDate: ${esc(b.date)} (${ENM[b.period]||b.period})\nSection: ${ENM[b.section]||b.section}\nTotal: ${b.price} SAR\nPaid: ${b.paid} SAR\nRemaining: ${rem(b)} SAR\nStatus: ${ENM[b.status]||b.status}\n\nThank you!`:`*${NAME} - سند تأكيد حجز*\n\nعزيزي المستأجر: ${b.name}\nتاريخ الحجز: ${dual(b.date)} (${b.period})\nالقسم: ${esc(b.section)}\nالمبلغ كامل: ${b.price} ر.س\nالمدفوع: ${b.paid} ر.س\nالمتبقي: ${rem(b)} ر.س\nالحالة: ${b.status}\n\nنتشرف بزيارتكم!`;
  window.open(`https://wa.me/${phoneFmt(b.phone).slice(1)}?text=${encodeURIComponent(msg)}`,'_blank')}
 
 /* report */
@@ -618,14 +628,14 @@ function importXls(ev){
   const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
   const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
   const add=[];rows.forEach((row,i)=>{if(i===0||!row[1])return;
-   add.push({id:Date.now()+i,name:String(row[1]).trim(),phone:String(row[2]).replace(/\D/g,'').replace(/^966/,'').replace(/^0/,'')||'500000000',date:row[3]||today(),period:row[4]||'مساء',section:row[5]||'قسمين',price:num(row[6]),paid:num(row[7]),method:'استيراد إكسل',status:row[9]||'مؤكد'})});
+   const rb=sanB({id:Date.now()+i,name:String(row[1]).trim(),phone:String(row[2]).replace(/\D/g,'').replace(/^966/,'').replace(/^0/,'')||'500000000',date:_d(row[3])||today(),period:row[4]||'مساء',section:row[5]||'قسمين',price:num(row[6]),paid:num(row[7]),method:'استيراد إكسل',status:row[9]||'مؤكد'});if(rb)add.push(rb)});
   if(add.length&&confirm(`إضافة ${add.length} حجز إلى الحجوزات الحالية؟ (إلغاء = استبدال الكل)`))bookings=bookings.concat(add);else if(add.length)bookings=add;
   save();alert('تم الاستيراد بنجاح!')}catch(err){alert('حدث خطأ أثناء قراءة الملف.')}};
  r.readAsArrayBuffer(f);ev.target.value=''}
 function expJson(){dl(new Blob([JSON.stringify({bookings,expenses},null,2)],{type:'application/json'}),`نسخة_احتياطية_${NAME}.json`)}
 function impJson(ev){
  const f=ev.target.files[0];if(!f)return;const r=new FileReader();
- r.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.bookings)bookings=d.bookings;if(d.expenses)expenses=d.expenses;save();alert('تمت استعادة البيانات بنجاح!')}catch(err){alert('حدث خطأ في ملف JSON.')}};
+ r.onload=e=>{try{const d=JSON.parse(e.target.result);if(Array.isArray(d.bookings))bookings=d.bookings.slice(0,5000).map(sanB).filter(Boolean);if(Array.isArray(d.expenses))expenses=d.expenses.slice(0,5000).map(sanE).filter(Boolean);save();alert('تمت استعادة البيانات بنجاح!')}catch(err){alert('حدث خطأ في ملف JSON.')}};
  r.readAsText(f)}
 
 /* premium features */
@@ -645,7 +655,7 @@ function saveTpl(){sv('cruise_tpl',{tm:$('tpTm').value,rem:$('tpRem').value,ty:$
 function renderRem(){
  const t=today(),ad=n=>{const x=new Date(t);x.setDate(x.getDate()+n);return x.toISOString().slice(0,10)},tm=ad(1),yd=ad(-1),it=[];
  bookings.forEach(b=>{if(b.date===tm)it.push([b,'tm','قبل الموعد (غداً)']);if(rem(b)>0&&b.date>=t)it.push([b,'rem','المبلغ المتبقي: '+rem(b)+' ر.س']);if(b.date===yd)it.push([b,'ty','شكر بعد المغادرة'])});
- $('remBody').innerHTML=it.map(([b,k,l])=>`<tr><td>${esc(b.name)}</td><td>${b.date}</td><td>${l}</td><td><button class="btn b3" style="width:auto;padding:5px 10px" onclick="sendRem('${b.id}','${k}')">إرسال</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:16px;color:#a4b0be">لا توجد تذكيرات اليوم</td></tr>';
+ $('remBody').innerHTML=it.map(([b,k,l])=>`<tr><td>${esc(b.name)}</td><td>${esc(b.date)}</td><td>${l}</td><td><button class="btn b3" style="width:auto;padding:5px 10px" onclick="sendRem('${sid(b.id)}','${k}')">إرسال</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:16px;color:#a4b0be">لا توجد تذكيرات اليوم</td></tr>';
  const T=tpl();$('tpTm').value=T.tm;$('tpRem').value=T.rem;$('tpTy').value=T.ty}
 function sendRem(id,k){const b=bookings.find(x=>String(x.id)===id);if(!b)return;
  const m=tpl()[k].replace(/{name}/g,b.name).replace(/{date}/g,b.date).replace(/{rem}/g,rem(b)).replace(/{facility}/g,NAME);
@@ -653,14 +663,14 @@ function sendRem(id,k){const b=bookings.find(x=>String(x.id)===id);if(!b)return;
 function renderCus(){
  const m={},meta=ld('cruise_customers',{});
  bookings.forEach(b=>{const p=String(b.phone),c=m[p]=m[p]||{p,name:b.name,n:0,paid:0,last:''};c.n++;c.paid+=num(b.paid);if(b.date>c.last){c.last=b.date;c.name=b.name}});
- $('cusBody').innerHTML=Object.values(m).sort((a,b)=>b.n-a.n).map(c=>{const o=meta[c.p]||{};return `<tr><td><b>${esc(c.name)}</b> ${o.black?'<span class="bd no">قائمة سوداء</span>':''}${c.n>=3?' <span class="bd ok">متكرر</span>':''}</td><td dir="ltr">${phoneFmt(c.p)}</td><td>${c.n}</td><td>${c.paid} ر.س</td><td>${c.last}</td><td style="white-space:normal">${esc(o.note||'')}</td><td><button class="btn b2" style="width:auto;padding:4px 8px" onclick="cusNote('${c.p}')">ملاحظة</button> <button class="btn" style="width:auto;padding:4px 8px;background:${o.black?'#10ac84':'#c62828'}" onclick="cusBlack('${c.p}')">${o.black?'رفع الحظر':'حظر'}</button></td></tr>`}).join('')||'<tr><td colspan="7" style="text-align:center;padding:16px;color:#a4b0be">لا يوجد عملاء بعد</td></tr>'}
+ $('cusBody').innerHTML=Object.values(m).sort((a,b)=>b.n-a.n).map(c=>{const o=meta[c.p]||{};return `<tr><td><b>${esc(c.name)}</b> ${o.black?'<span class="bd no">قائمة سوداء</span>':''}${c.n>=3?' <span class="bd ok">متكرر</span>':''}</td><td dir="ltr">${phoneFmt(c.p)}</td><td>${c.n}</td><td>${c.paid} ر.س</td><td>${c.last}</td><td style="white-space:normal">${esc(o.note||'')}</td><td><button class="btn b2" style="width:auto;padding:4px 8px" onclick="cusNote('${sid(c.p)}')">ملاحظة</button> <button class="btn" style="width:auto;padding:4px 8px;background:${o.black?'#10ac84':'#c62828'}" onclick="cusBlack('${sid(c.p)}')">${o.black?'رفع الحظر':'حظر'}</button></td></tr>`}).join('')||'<tr><td colspan="7" style="text-align:center;padding:16px;color:#a4b0be">لا يوجد عملاء بعد</td></tr>'}
 function cusNote(p){const mt=ld('cruise_customers',{}),o=mt[p]||{},n=prompt('ملاحظة عن العميل:',o.note||'');if(n===null)return;o.note=n;mt[p]=o;sv('cruise_customers',mt);renderCus()}
 function cusBlack(p){const mt=ld('cruise_customers',{}),o=mt[p]||{};o.black=!o.black;mt[p]=o;sv('cruise_customers',mt);renderCus()}
 let STF={};
 async function renderStaff(){
  try{STF=(await db.ref('data/'+TID+'/staff').once('value')).val()||{}}catch(e){STF={}}
  $('stLim').textContent=`(${Object.keys(STF).length+1} من ${PL?PL.users:'∞'})`;
- $('stBody').innerHTML=`<tr><td>${esc(ME.name)} (أنت)</td><td dir="ltr">${esc(ME.email||'')}</td><td><span class="bd ok">مالك</span></td><td><span class="bd ok">نشط</span></td><td></td></tr>`+Object.entries(STF).map(([uid,u])=>`<tr><td>${esc(u.name)}</td><td dir="ltr">${esc(u.email)}</td><td>${u.role==='owner'?'<span class="bd ok">مدير</span>':'<span class="bd rijal">موظف</span>'}</td><td><span class="bd ${u.active?'ok':'no'}">${u.active?'نشط':'موقوف'}</span></td><td><button class="btn b2" style="width:auto;padding:4px 8px" onclick="togStaff('${uid}')">${u.active?'إيقاف':'تفعيل'}</button> <button class="btn b4" style="width:auto;padding:4px 8px" onclick="delStaff('${uid}')">حذف</button></td></tr>`).join('')}
+ $('stBody').innerHTML=`<tr><td>${esc(ME.name)} (أنت)</td><td dir="ltr">${esc(ME.email||'')}</td><td><span class="bd ok">مالك</span></td><td><span class="bd ok">نشط</span></td><td></td></tr>`+Object.entries(STF).map(([uid,u])=>`<tr><td>${esc(u.name)}</td><td dir="ltr">${esc(u.email)}</td><td>${u.role==='owner'?'<span class="bd ok">مدير</span>':'<span class="bd rijal">موظف</span>'}</td><td><span class="bd ${u.active?'ok':'no'}">${u.active?'نشط':'موقوف'}</span></td><td><button class="btn b2" style="width:auto;padding:4px 8px" onclick="togStaff('${sid(uid)}')">${u.active?'إيقاف':'تفعيل'}</button> <button class="btn b4" style="width:auto;padding:4px 8px" onclick="delStaff('${sid(uid)}')">حذف</button></td></tr>`).join('')}
 async function addStaff(){
  const n=$('sN').value.trim(),em=$('sU').value.trim().toLowerCase(),p=$('sP').value,rl=$('sR').value==='owner'?'owner':'staff';
  if(!n||!/^\S+@\S+\.\S+$/.test(em)||p.length<6){alert('أدخل الاسم وبريداً صحيحاً وكلمة مرور 6 أحرف على الأقل');return}
@@ -732,7 +742,7 @@ function ntfRender(){const box=$('ntf');if(!box||!TEN)return;let hid=[];try{hid=
  const d=TEN.end?Math.ceil((new Date(TEN.end+'T23:59:59')-new Date())/864e5):null;
  if(d!==null&&d>=0&&d<=15&&!sessionStorage.getItem('sa'))L.unshift({id:'sub'+today(),type:'sub',text:d===0?'ينتهي اشتراككم اليوم ('+TEN.end+')! تواصلوا مع الدعم للتجديد.':'ينتهي اشتراككم بعد '+d+' يوم ('+TEN.end+'). تواصلوا مع الدعم للتجديد.',renew:1});
  const vis=L.filter(n=>!hid.includes(n.id));const ph=normPhone(SUPPORT_PH);window.NTALL=L;window.NTHID=hid;try{bellUpdate()}catch(e){}
- box.innerHTML=vis.map(n=>`<div class="nt" style="background:${col[n.type]}"><span>${ic[n.type]}</span><b>${esc(n.text)}</b>${n.renew&&ph?`<a target="_blank" href="https://wa.me/${ph}?text=${encodeURIComponent('السلام عليكم، أرغب بتجديد اشتراك منشأة ('+(TEN.name||'')+')')}">تجديد</a>`:''}<button onclick="ntfHide('${n.id}')">✕</button></div>`).join('');
+ box.innerHTML=vis.map(n=>`<div class="nt" style="background:${col[n.type]}"><span>${ic[n.type]}</span><b>${esc(n.text)}</b>${n.renew&&ph?`<a target="_blank" href="https://wa.me/${ph}?text=${encodeURIComponent('السلام عليكم، أرغب بتجديد اشتراك منشأة ('+(TEN.name||'')+')')}">تجديد</a>`:''}<button onclick="ntfHide('${sid(n.id)}')">✕</button></div>`).join('');
  document.body.style.paddingTop=box.offsetHeight+'px'}
 function ntfHide(id){let h=[];try{h=JSON.parse(localStorage.getItem('ntf_hid')||'[]')}catch(e){}h.push(id);localStorage.setItem('ntf_hid',JSON.stringify(h.slice(-50)));ntfRender()}
 function fbListen(){
