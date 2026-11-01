@@ -495,17 +495,18 @@ $('bf').onsubmit=e=>{
  if(c){alert('⚠️ تعارض في الحجز:\n'+c);return}
  const b={id:id?+id:Date.now(),name:$('bName').value.trim(),phone:ph,date,period:$('bPeriod').value,section:sec,price:num($('bPrice').value),paid:num($('bPaid').value),method:$('bMethod').value,status:$('bStatus').value,unit:$('bUnit').value||''};
  const old=id?bookings.find(x=>String(x.id)===id):null;
-  claimSlot(b).then(ok=>{if(!ok){alert('⚠️ تعارض في الحجز:\nهذا الموعد حُجز للتو من مستخدم آخر. حدّث الصفحة واختر موعداً آخر.');return}
+  claimSlot(b,!id).then(ok=>{if(ok==='conflict'){alert('⚠️ تعارض في الحجز:\nهذا الموعد حُجز للتو من مستخدم آخر. حدّث الصفحة واختر موعداً آخر.');return}if(ok!=='ok'){alert('⚠️ تعذر التأكد من توفر الموعد، ولم يُسجَّل الحجز.\nتحقق من اتصال الإنترنت وحاول مرة أخرى.');return}
    if(id){const i=bookings.findIndex(x=>String(x.id)===id);if(i>-1)bookings[i]=b;alert('تم تحديث الحجز بنجاح!');if(old&&(old.date!==b.date||(old.unit||'')!==(b.unit||'')))releaseSlot(old)}else{bookings.push(b);alert('تم تسجيل الحجز بنجاح!')}
    resetForm();save();if(id)sw('records')})};
 function slotKey(b){return 'data/'+TID+'/slots/'+(b.date+'_'+(b.unit||'0')).replace(/[.$#\[\]\/]/g,c=>'%'+c.charCodeAt(0).toString(16))}
 const _arr=c=>Array.isArray(c)?c:(c?Object.values(c):[]);
-function claimSlot(b){if(typeof db==='undefined'||!TEN)return Promise.resolve(true);
- const run=db.ref(slotKey(b)).transaction(cur=>{let base=cur?_arr(cur):bookings.filter(x=>x.date===b.date&&(x.unit||'')===(b.unit||'')).map(x=>({id:x.id,period:x.period,section:x.section}));
+function claimSlot(b,isNew){if(typeof db==='undefined'||!TEN)return Promise.resolve('ok');
+ let dead=false;
+ const run=db.ref(slotKey(b)).transaction(cur=>{if(dead)return;let base=cur?_arr(cur):bookings.filter(x=>x.date===b.date&&(x.unit||'')===(b.unit||'')).map(x=>({id:x.id,period:x.period,section:x.section}));
   const o=base.filter(x=>String(x.id)!==String(b.id)),same=o.filter(x=>x.period===b.period||x.period==='يوم كامل'||b.period==='يوم كامل');
   if(same.some(x=>x.section==='قسمين')||(b.section==='قسمين'&&same.length)||same.some(x=>x.section===b.section))return;
-  o.push({id:b.id,period:b.period,section:b.section});return o}).then(r=>r.committed).catch(()=>true);
- return Promise.race([run,new Promise(r=>setTimeout(()=>r(true),6000))])}
+  o.push({id:b.id,period:b.period,section:b.section});return o}).then(r=>r.committed?'ok':'conflict').catch(()=>'fail');
+ return Promise.race([run,new Promise(r=>setTimeout(()=>{dead=true;r('fail')},8000))]).then(x=>{if(x==='fail'&&isNew)releaseSlot(b);return x})}
 function releaseSlot(b){try{if(!TEN||typeof db==='undefined')return;db.ref(slotKey(b)).transaction(cur=>{const o=_arr(cur).filter(x=>String(x.id)!==String(b.id));return o.length?o:null}).catch(()=>{})}catch(e){}}
 function resetForm(){$('bf').reset();$('bId').value='';$('bDate').value=today();$('formTitle').textContent='حجز جديد للشاليه';autoPrice()}
 function editBooking(id){
@@ -801,12 +802,12 @@ const FAQ=[
 {q:'هل بياناتي وعملائي محمية؟',k:'امان حمايه خصوصيه بيانات عملاء ارقام هواتف سريه',a:'نعم، كل منشأة معزولة عن غيرها، ولا يستطيع أحد من الإدارة الاطلاع على حجوزاتك أو عملائك أو أرقامهم.'},
 {q:'ما معنى شريط التنبيه أعلى الشاشة؟',k:'تنبيه شريط صيانه تحديث عطل اعلان اشعار',a:'يعرض التحديثات والصيانة وأي أعطال، ويمكنك إخفاؤه بزر الإغلاق.'},
 {q:'أريد تغيير البريد أو بيانات الحساب',k:'تغيير بريد ايميل حساب بيانات تعديل الحساب',a:'تواصل مع الدعم الفني لتغيير بريد الدخول، أما اسم المستخدم فتعدّله من ملفك الشخصي.'}];
-const _n=t=>String(t||'').replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').toLowerCase();
+const _fn=t=>String(t||'').replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').toLowerCase();
 function botTog(){const p=document.getElementById('botP');const o=p.style.display!=='flex';p.style.display=o?'flex':'none';if(o)faqGo()}
 function faqAns(f){if(f.a!=='__SUB__')return f.a;try{if(TEN&&TEN.end)return 'ينتهي اشتراكك في: '+TEN.end+'. يظهر تنبيه قبل 15 يوماً من الانتهاء، وللتجديد تواصل مع الدعم.'}catch(e){}return 'تجد تاريخ انتهاء اشتراكك في التنبيه أعلى الشاشة، وللتجديد تواصل مع الدعم.'}
-function faqGo(){const m=document.getElementById('botM'),v=_n(document.getElementById('botI').value).trim();m.innerHTML='';
+function faqGo(){const m=document.getElementById('botM'),v=_fn(document.getElementById('botI').value).trim();m.innerHTML='';
 let list;if(!v){list=FAQ.slice(0,6);faqHead(m,'أسئلة شائعة:')}else{const w=v.split(/\s+/).filter(x=>x.length>1);
-list=FAQ.map(f=>{const h=_n(f.q+' '+f.k+' '+f.a);let sc=0;w.forEach(x=>{if(_n(f.q).includes(x))sc+=3;else if(_n(f.k).includes(x))sc+=2;else if(h.includes(x))sc+=1});return[sc,f]}).filter(x=>x[0]>0).sort((a,b)=>b[0]-a[0]).slice(0,3).map(x=>x[1])}
+list=FAQ.map(f=>{const h=_fn(f.q+' '+f.k+' '+f.a);let sc=0;w.forEach(x=>{if(_fn(f.q).includes(x))sc+=3;else if(_fn(f.k).includes(x))sc+=2;else if(h.includes(x))sc+=1});return[sc,f]}).filter(x=>x[0]>0).sort((a,b)=>b[0]-a[0]).slice(0,3).map(x=>x[1])}
 list.forEach(f=>{const d=document.createElement('details');d.style.cssText='background:#F6EBDD;border-radius:10px;padding:8px 10px';const q=document.createElement('summary');q.textContent=f.q;q.style.cssText='font-weight:700;cursor:pointer';const a=document.createElement('div');a.textContent=faqAns(f);a.style.cssText='margin-top:6px;line-height:1.7';d.append(q,a);if(v&&list.length===1)d.open=true;m.appendChild(d)});
 if(v&&!list.length)faqHead(m,'لم أجد إجابة مطابقة.');
 const b=document.createElement('button');b.textContent='💬 التحدث مع موظف الدعم';b.style.cssText='background:#25D366;color:#fff;border:0;border-radius:10px;padding:9px;margin-top:4px';b.onclick=()=>{try{window.open('https://wa.me/'+String(SUPPORT_PH).replace(/\D/g,'')+'?text='+encodeURIComponent('أحتاج مساعدة'+(v?': '+document.getElementById('botI').value:'')),'_blank')}catch(e){}};m.appendChild(b)}
@@ -839,7 +840,7 @@ document.getElementById('ipY').onclick=()=>{b.remove();_ip.prompt()};document.ge
 window.addEventListener('appinstalled',()=>{_ip=null});
 </script>
 <script>
-function renderPlan(){const T=window.TEN||{},P=(typeof PL!=='undefined'&&PL)||{};const D=x=>x?new Date(x+'T00:00:00'):null;
+function renderPlan(){const T=(typeof TEN!=='undefined'&&TEN)||{},P=(typeof PL!=='undefined'&&PL)||{};const D=x=>x?new Date(x+'T00:00:00'):null;
 const e=D(T.end),st=D(T.start),n=new Date();n.setHours(0,0,0,0);
 const left=e?Math.ceil((e-n)/864e5):null,tot=(e&&st)?Math.max(1,Math.round((e-st)/864e5)):null;
 const stt=left===null?['غير محدد','#888']:left<0?['منتهي','#ee5253']:left<=15?['ينتهي قريباً','#ff9f43']:['فعّال','#10ac84'];
