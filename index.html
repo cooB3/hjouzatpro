@@ -229,7 +229,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
    <div style="background:#eef6ff;color:#2a5d9f;border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:14px">💡 اضغط زر «📄 عرض السند» تحت اسم العميل لفتح السند وطباعته وإرساله وتعديل الحجز.</div>
    <input id="search" placeholder="ابحث بالاسم، الجوال، أو التاريخ..." style="margin-bottom:10px">
    <div class="row" style="margin:0 0 12px">
-    <button class="btn b3" onclick="exportXls()" data-ft="excel"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
+    <button class="btn b3" onclick="exportXls()"><i class="fa-solid fa-file-excel"></i> تصدير إكسل</button>
     <label class="btn b3" data-ft="excel" style="cursor:pointer;margin:0"><i class="fa-solid fa-file-excel"></i> استيراد إكسل<input type="file" accept=".xlsx,.xls,.csv" onchange="importXls(event)" style="display:none"></label>
    </div>
    <div class="tr"><table><thead><tr><th>#</th><th>المستأجر</th><th>الجوال</th><th>التاريخ</th><th>الفترة</th><th>القسم</th><th>الإيجار</th><th>الواصل</th><th>المتبقي</th><th>الحالة</th></tr></thead><tbody id="recBody"></tbody></table></div>
@@ -618,7 +618,7 @@ function repPdf(){$('repPrint').querySelector('h2').textContent=NAME+' - الت�
 
 /* excel + json */
 function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click()}
-function exportXls(){if(!HAS('excel')){alert('هذه الميزة إضافية وغير مفعّلة في باقتك. تواصل مع الدعم لتفعيلها.');return}
+function exportXls(){
  const sm=+$('recMonth').value;
  const rows=bookings.filter(b=>b.date&&+String(b.date).slice(5,7)-1===sm).map((b,i)=>({'م':i+1,'اسم المستأجر':b.name,'رقم الجوال':phoneFmt(b.phone),'تاريخ الحجز':b.date,'الفترة':b.period,'القسم':b.section,'إجمالي الإيجار':num(b.price),'المبلغ الواصل':num(b.paid),'المتبقي':rem(b),'حالة الحجز':b.status}));
  const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();wb.Workbook={Views:[{RTL:true}]};
