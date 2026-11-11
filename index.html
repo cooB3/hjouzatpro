@@ -85,7 +85,9 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
 #splash .sp-bar i{display:block;height:100%;width:0;background:#E76F51;border-radius:6px}
 #splash .sp-pct{font-size:15px;font-weight:700}
 #splash .sp-by{position:absolute;bottom:34px;left:0;right:0;font-size:14px;line-height:1.7;opacity:.9;text-align:center}
-@keyframes spu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}</style>
+@keyframes spu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}.dtog{display:inline-flex;border:1px solid #E76F51;border-radius:8px;overflow:hidden;flex:none}.dtog button{min-height:26px!important;padding:2px 10px;border:0;background:#fff;color:#E76F51;font-size:12px;font-weight:800;width:auto}.dtog button.on{background:#E76F51;color:#fff}
+#hijRow{display:none;gap:6px}body.hmode #hijRow{display:flex}body.hmode #bDate{position:absolute;opacity:0;pointer-events:none;height:1px;width:1px}
+</style>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"><link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <meta name="theme-color" content="#E76F51"><meta property="og:type" content="website"><meta property="og:site_name" content="حجوزات"><meta property="og:locale" content="ar_SA"><meta property="og:title" content="حجوزات - نظام إدارة الحجوزات"><meta property="og:description" content="أدِر حجوزات منشأتك وعملاءك ومصاريفك من مكان واحد"><meta property="og:image" content="https://raw.githubusercontent.com/cooB3/gbj/main/og-image.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://raw.githubusercontent.com/cooB3/gbj/main/og-image.png">
 <link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="حجوزات"><meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -150,7 +152,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
  <div class="banner"><h2><i class="fa-solid fa-house-chimney-window"></i> <span id="tName"></span></h2><p id="tWelcome">نظام إدارة الحجوزات والماليات</p></div>
  <div class="top">
   <button class="menu" id="menuBtn"><i class="fa-solid fa-bars"></i></button>
-  <div style="display:flex;gap:6px;align-items:center"><button class="menu" id="bellBtn" title="التنبيهات" onclick="bellTog()" style="position:relative;background:#5f6b7a"><i class="fa-solid fa-bell"></i><span id="bellN" style="display:none;position:absolute;top:-5px;left:-5px;min-width:18px;height:18px;border-radius:9px;background:#e53935;color:#fff;font-size:11px;align-items:center;justify-content:center;padding:0 4px">0</span></button><button class="menu" style="background:#c62828" title="خروج" onclick="tLogout()"><i class="fa-solid fa-right-from-bracket"></i></button><select id="period" style="width:auto;padding:6px 10px"></select></div>
+  <div style="display:flex;gap:6px;align-items:center"><button class="menu" id="calBtn" onclick="calTog()" title="تبديل التاريخ: ميلادي / هجري" style="background:#2e86de;font-size:14px;font-weight:800;min-width:40px">م</button><button class="menu" id="bellBtn" title="التنبيهات" onclick="bellTog()" style="position:relative;background:#5f6b7a"><i class="fa-solid fa-bell"></i><span id="bellN" style="display:none;position:absolute;top:-5px;left:-5px;min-width:18px;height:18px;border-radius:9px;background:#e53935;color:#fff;font-size:11px;align-items:center;justify-content:center;padding:0 4px">0</span></button><button class="menu" style="background:#c62828" title="خروج" onclick="tLogout()"><i class="fa-solid fa-right-from-bracket"></i></button><select id="period" style="width:auto;padding:6px 10px"></select></div>
  </div>
 
  <section id="dashboard" class="tab active">
@@ -186,7 +188,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
     <div class="grid">
      <div><label>اسم المستأجر</label><input id="bName" required></div>
      <div><label>رقم الجوال</label><div class="ph"><span>+966</span><input id="bPhone" type="tel" maxlength="9" placeholder="5xxxxxxxx" required></div></div>
-     <div><label>تاريخ الحجز</label><input type="date" id="bDate" required></div>
+     <div id="bDateBox"><label style="display:flex;justify-content:space-between;align-items:center;gap:8px">تاريخ الحجز <span class="dtog"><button type="button" data-m="g" onclick="setCal('g')">ميلادي</button><button type="button" data-m="h" onclick="setCal('h')">هجري</button></span></label><input type="date" id="bDate" required><div id="hijRow"><select id="hD" onchange="hijIn()"></select><select id="hM" onchange="hijIn()"></select><select id="hY" onchange="hijIn()"></select></div><div id="bHijOut" style="font-size:13px;color:#6B5646;margin-top:4px"></div></div>
      <div><label>الفترة</label><select id="bPeriod"><option>مساء</option><option>صباح</option><option>يوم كامل</option></select></div>
      <div><label>القسم</label><select id="bSec"><option value="نساء">نساء</option><option value="رجال">رجال</option><option value="قسمين">قسمين (كامل الشاليه)</option></select></div>
      <div id="unitWrap" style="display:none"><label>الوحدة / الفرع</label><select id="bUnit"></select></div>
@@ -351,7 +353,7 @@ const TEN=(SA.tenants||[]).find(t=>String(t.id)===TID);
 const NAME=TEN?TEN.name:'';
 const ME=(SA.users||[]).find(u=>String(u.id)===sessionStorage.getItem('uid')&&u.tenant==TID)||(SA.users||[]).find(u=>u.tenant==TID&&u.role==='owner');
 let PL=(SA.plans||[]).find(p=>TEN&&p.id==TEN.plan);
-const HAS=k=>{const ad=!!(TEN&&(TEN.addons||[]).includes(k));if(k==='import')return ad;if(sessionStorage.getItem('sa'))return true;const basic=PL&&/^(الأساسية|الاساسية)$/.test(String(PL.name||'').trim());const fromPlan=!!(PL&&PL.f&&PL.f[k])&&!(basic&&k==='backup');return fromPlan||ad};
+const HAS=k=>{const ad=!!(TEN&&(TEN.addons||[]).includes(k));if(k==='import')return ad&&!(TEN&&TEN.importDone);if(sessionStorage.getItem('sa'))return true;const basic=PL&&/^(الأساسية|الاساسية)$/.test(String(PL.name||'').trim());const fromPlan=!!(PL&&PL.f&&PL.f[k])&&!(basic&&k==='backup');return fromPlan||ad};
 const persistSA=()=>localStorage.setItem('sa_cache',JSON.stringify(SA));
 $('tl').style.display=TEN?'none':'flex';
 let SUPPORT_PH='',LASTREG=null;
@@ -406,7 +408,7 @@ async function buildCache(u){
  const t=await g('tenants/'+tid);if(!t)return bad('المنشأة غير موجودة');
  if(!prev){if(t.active!==true)return bad('حساب المنشأة موقوف، تواصل مع الإدارة');if((t.endTs||0)<Date.now())return bad('انتهى اشتراك المنشأة، تواصل معنا للتجديد')}
  const [pl,st]=await Promise.all([g('plans'),g('system/settings')]);
- localStorage.setItem('sa_cache',JSON.stringify({tenants:[{id:tid,code:t.code,name:t.name,type:t.type,owner:t.owner,phone:t.phone,address:t.address||'',plan:t.planId,end:t.end,on:t.active===true,addons:Object.keys(t.addons||{}),gift:!!t.gift}],users:[me],plans:Object.entries(pl||{}).map(([id,p])=>({id,name:p.name,price:p.price,units:p.units,users:p.users,f:p.features||{}})),settings:st||{},tickets:SA.tickets||[]}));
+ localStorage.setItem('sa_cache',JSON.stringify({tenants:[{id:tid,code:t.code,name:t.name,type:t.type,owner:t.owner,phone:t.phone,address:t.address||'',plan:t.planId,end:t.end,on:t.active===true,addons:Object.keys(t.addons||{}),importDone:t.importDone||0,gift:!!t.gift}],users:[me],plans:Object.entries(pl||{}).map(([id,p])=>({id,name:p.name,price:p.price,units:p.units,users:p.users,f:p.features||{}})),settings:st||{},tickets:SA.tickets||[]}));
  sessionStorage.setItem('tid',tid);sessionStorage.setItem('uid',u.uid);if(prev)sessionStorage.setItem('sa','1');
  location.reload()}
 auth.onAuthStateChanged(async u=>{
@@ -532,15 +534,15 @@ function dash(){
  $('sExp').textContent=ex.toLocaleString()+' ر.س';$('sCol').textContent=co.toLocaleString()+' ر.س';$('sRem').textContent=(ex-co).toLocaleString()+' ر.س';$('sExs').textContent=te.toLocaleString()+' ر.س';$('sNet').textContent=(co-te).toLocaleString()+' ر.س';
  const tb=bookings.filter(b=>b.date===today());
  $('todayAlert').innerHTML=tb.length?`<div class="alert"><i class="fa-solid fa-bell"></i> يوجد ${tb.length} حجز اليوم باسم (${tb.map(b=>esc(b.name)).join('، ')})!</div>`:'';
- $('recent').innerHTML=bookings.length?bookings.slice(-4).reverse().map(b=>`<tr><td><b>${esc(b.name)}</b></td><td>${esc(b.date)}</td><td><span class="bd ${secCls(b.section)}">${esc(b.section)}</span></td><td>${b.price} ر.س</td><td style="color:#c62828;font-weight:700">${rem(b)} ر.س</td><td><span class="bd ${stCls(b.status)}">${esc(b.status)}</span></td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:#a4b0be;padding:15px">لا توجد حجوزات مسجلة</td></tr>'}
+ $('recent').innerHTML=bookings.length?bookings.slice(-4).reverse().map(b=>`<tr><td><b>${esc(b.name)}</b></td><td>${dFmt(b.date)}</td><td><span class="bd ${secCls(b.section)}">${esc(b.section)}</span></td><td>${b.price} ر.س</td><td style="color:#c62828;font-weight:700">${rem(b)} ر.س</td><td><span class="bd ${stCls(b.status)}">${esc(b.status)}</span></td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:#a4b0be;padding:15px">لا توجد حجوزات مسجلة</td></tr>'}
 
 /* records */
 function renderRec(){
  const sm=+$('recMonth').value;
  const list=bookings.filter(b=>b.date&&+String(b.date).slice(5,7)-1===sm).sort((a,b)=>a.date.localeCompare(b.date));
- $('recBody').innerHTML=list.length?list.map((b,i)=>`<tr><td>${i+1}</td><td><b style="color:#54a0ff;cursor:pointer;text-decoration:underline" onclick="openRc('${sid(b.id)}')">${esc(b.name)}</b><br><button onclick="openRc('${sid(b.id)}')" style="margin-top:4px;background:#54a0ff;color:#fff;border:0;border-radius:8px;padding:4px 10px;font-size:13px">📄 عرض السند</button>${b.unit?` <small>(${esc(b.unit)})</small>`:''}</td><td dir="ltr" style="text-align:right">${phoneFmt(b.phone)}</td><td>${esc(b.date)}</td><td>${esc(b.period)}</td><td><span class="bd ${secCls(b.section)}">${esc(b.section)}</span></td><td>${b.price} ر.س</td><td style="color:#10ac84;font-weight:700">${b.paid} ر.س</td><td style="color:#c62828;font-weight:700">${rem(b)} ر.س</td><td><span class="bd ${stCls(b.status)}">${esc(b.status)}</span></td></tr>`).join(''):`<tr><td colspan="10" style="text-align:center;color:#a4b0be;padding:20px">لا توجد حجوزات في شهر ${MN[sm]}.</td></tr>`;
+ $('recBody').innerHTML=list.length?list.map((b,i)=>`<tr data-s="${esc(b.date)} ${g2h(b.date)}"><td>${i+1}</td><td><b style="color:#54a0ff;cursor:pointer;text-decoration:underline" onclick="openRc('${sid(b.id)}')">${esc(b.name)}</b><br><button onclick="openRc('${sid(b.id)}')" style="margin-top:4px;background:#54a0ff;color:#fff;border:0;border-radius:8px;padding:4px 10px;font-size:13px">📄 عرض السند</button>${b.unit?` <small>(${esc(b.unit)})</small>`:''}</td><td dir="ltr" style="text-align:right">${phoneFmt(b.phone)}</td><td>${dFmt(b.date)}</td><td>${esc(b.period)}</td><td><span class="bd ${secCls(b.section)}">${esc(b.section)}</span></td><td>${b.price} ر.س</td><td style="color:#10ac84;font-weight:700">${b.paid} ر.س</td><td style="color:#c62828;font-weight:700">${rem(b)} ر.س</td><td><span class="bd ${stCls(b.status)}">${esc(b.status)}</span></td></tr>`).join(''):`<tr><td colspan="10" style="text-align:center;color:#a4b0be;padding:20px">لا توجد حجوزات في شهر ${MN[sm]}.</td></tr>`;
  filt()}
-function filt(){const q=$('search').value.toLowerCase();document.querySelectorAll('#recBody tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(q)?'':'none')}
+function filt(){const q=$('search').value.toLowerCase(),z=t=>String(t).replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/-/g,'/'),qn=z(q);document.querySelectorAll('#recBody tr').forEach(r=>r.style.display=(r.innerText.toLowerCase().includes(q)||z(r.dataset.s||'').includes(qn))?'':'none')}
 $('search').onkeyup=filt;$('recMonth').onchange=renderRec;
 
 /* calendar */
@@ -645,20 +647,10 @@ async function exportXls(){
  ws.pageSetup={orientation:'landscape',paperSize:9,fitToPage:true,fitToWidth:1,fitToHeight:0,horizontalCentered:true,margins:{left:.4,right:.4,top:.6,bottom:.6,header:.3,footer:.3},printArea:'A1:J'+tr,printTitlesRow:'3:3'};
  ws.headerFooter={oddFooter:'&Cصفحة &P من &N'};
  const buf=await wb.xlsx.writeBuffer();dl(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),`سجل_حجوزات_${MN[sm]}_${String(NAME||'').replace(/[\\/:*?"<>|]/g,'')}.xlsx`)}
-function importXls(ev){if(!HAS('import')){alert('الاستيراد خدمة استثنائية تُفعَّل من الإدارة عند الحاجة. تواصل مع الدعم.');return}
- const f=ev.target.files[0];if(!f)return;const r=new FileReader();
- r.onload=e=>{try{
-  const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-  const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
-  const add=[];rows.forEach((row,i)=>{if(i===0||!row[1])return;
-   const rb=sanB({id:Date.now()+i,name:String(row[1]).trim(),phone:String(row[2]).replace(/\D/g,'').replace(/^966/,'').replace(/^0/,'')||'500000000',date:_d(row[3])||today(),period:row[4]||'مساء',section:row[5]||'قسمين',price:num(row[6]),paid:num(row[7]),method:'استيراد إكسل',status:row[9]||'مؤكد'});if(rb)add.push(rb)});
-  if(add.length&&confirm(`إضافة ${add.length} حجز إلى الحجوزات الحالية؟ (إلغاء = استبدال الكل)`))bookings=bookings.concat(add);else if(add.length)bookings=add;
-  save();alert('تم الاستيراد بنجاح!')}catch(err){alert('حدث خطأ أثناء قراءة الملف.')}};
- r.readAsArrayBuffer(f);ev.target.value=''}
 function expJson(){if(!HAS('backup')){alert('هذه الميزة إضافية وغير مفعّلة في باقتك. تواصل مع الدعم لتفعيلها.');return}dl(new Blob([JSON.stringify({bookings,expenses},null,2)],{type:'application/json'}),`نسخة_احتياطية_${NAME}.json`)}
 function impJson(ev){if(!HAS('import')){alert('الاستيراد خدمة استثنائية تُفعَّل من الإدارة عند الحاجة. تواصل مع الدعم.');return}
  const f=ev.target.files[0];if(!f)return;const r=new FileReader();
- r.onload=e=>{try{const d=JSON.parse(e.target.result);if(Array.isArray(d.bookings))bookings=d.bookings.slice(0,5000).map(sanB).filter(Boolean);if(Array.isArray(d.expenses))expenses=d.expenses.slice(0,5000).map(sanE).filter(Boolean);save();alert('تمت استعادة البيانات بنجاح!')}catch(err){alert('حدث خطأ في ملف JSON.')}};
+ r.onload=e=>{try{const d=JSON.parse(e.target.result);if(Array.isArray(d.bookings))bookings=d.bookings.slice(0,5000).map(sanB).filter(Boolean);if(Array.isArray(d.expenses))expenses=d.expenses.slice(0,5000).map(sanE).filter(Boolean);save();try{renderRec();dash()}catch(e){}markImportDone();alert('تمت استعادة البيانات بنجاح.\nأُغلقت خدمة الاستيراد تلقائياً.')}catch(err){alert('حدث خطأ في ملف JSON.')}};
  r.readAsText(f)}
 
 /* premium features */
@@ -678,7 +670,7 @@ function saveTpl(){sv('cruise_tpl',{tm:$('tpTm').value,rem:$('tpRem').value,ty:$
 function renderRem(){
  const t=today(),ad=n=>{const x=new Date(t);x.setDate(x.getDate()+n);return x.toISOString().slice(0,10)},tm=ad(1),yd=ad(-1),it=[];
  bookings.forEach(b=>{if(b.date===tm)it.push([b,'tm','قبل الموعد (غداً)']);if(rem(b)>0&&b.date>=t)it.push([b,'rem','المبلغ المتبقي: '+rem(b)+' ر.س']);if(b.date===yd)it.push([b,'ty','شكر بعد المغادرة'])});
- $('remBody').innerHTML=it.map(([b,k,l])=>`<tr><td>${esc(b.name)}</td><td>${esc(b.date)}</td><td>${l}</td><td><button class="btn b3" style="width:auto;padding:5px 10px" onclick="sendRem('${sid(b.id)}','${k}')">إرسال</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:16px;color:#a4b0be">لا توجد تذكيرات اليوم</td></tr>';
+ $('remBody').innerHTML=it.map(([b,k,l])=>`<tr><td>${esc(b.name)}</td><td>${dFmt(b.date)}</td><td>${l}</td><td><button class="btn b3" style="width:auto;padding:5px 10px" onclick="sendRem('${sid(b.id)}','${k}')">إرسال</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:16px;color:#a4b0be">لا توجد تذكيرات اليوم</td></tr>';
  const T=tpl();$('tpTm').value=T.tm;$('tpRem').value=T.rem;$('tpTy').value=T.ty}
 function sendRem(id,k){const b=bookings.find(x=>String(x.id)===id);if(!b)return;
  const m=tpl()[k].replace(/{name}/g,b.name).replace(/{date}/g,b.date).replace(/{rem}/g,rem(b)).replace(/{facility}/g,NAME);
@@ -757,7 +749,7 @@ function applyTenant(t){
  if(t.prices){prices=t.prices;localStorage.setItem(K('chalet_prices'),JSON.stringify(prices));fillCfg();autoPrice()}else if(f&&localStorage.getItem(K('chalet_prices')))fbSet('tenants/'+TID+'/prices',prices);
  if(t.brandColor!==undefined){lsv2('cruise_brand',{color:t.brandColor});applyBrand()}else if(f&&localStorage.getItem(K('cruise_brand')))fbSv('cruise_brand',ld('cruise_brand',{}));
  if(t.lang){lsv2('cruise_lang',t.lang);if($('invLangSel'))$('invLangSel').value=t.lang;invLang()}else if(f&&localStorage.getItem(K('cruise_lang')))fbSv('cruise_lang',ld('cruise_lang','ar'));
- Object.assign(TEN,{name:t.name,phone:t.phone,address:t.address,end:t.end,start:t.start,on:t.active===true,addons:Object.keys(t.addons||{}),plan:t.planId});PL=(SA.plans||[]).find(p=>p.id==TEN.plan)||PL;persistSA();applyFeatures()}
+ Object.assign(TEN,{name:t.name,phone:t.phone,address:t.address,end:t.end,start:t.start,importDone:t.importDone||0,on:t.active===true,addons:Object.keys(t.addons||{}),importDone:t.importDone||0,plan:t.planId});PL=(SA.plans||[]).find(p=>p.id==TEN.plan)||PL;persistSA();applyFeatures()}
 let NT=[];
 function ntfRender(){const box=$('ntf');if(!box||!TEN)return;let hid=[];try{hid=JSON.parse(localStorage.getItem('ntf_hid')||'[]')}catch(e){}
  const col={update:'#10ac84',maint:'#ff9f43',outage:'#c62828',info:'#2e86de',sub:'#e67e22'},ic={update:'🔄',maint:'🛠️',outage:'⚠️',info:'📢',sub:'⏳'};
@@ -885,7 +877,7 @@ let k=0;const iv=setInterval(()=>{k++;try{if(typeof ME!=='undefined'&&ME){clearI
 </script>
 <script>
 try{const m=localStorage.getItem('lgmsg');if(m){localStorage.removeItem('lgmsg');const e=document.getElementById('te');if(e){e.style.color='#c62828';e.textContent=m}}}catch(e){}
-try{const t=+localStorage.getItem('authlost');if(t){localStorage.removeItem('authlost');if(Date.now()-t<60000){const e=document.getElementById('te');if(e){e.style.color='#c62828';e.textContent='تعذر حفظ جلسة الدخول في هذا المتصفح. افتح الرابط في Chrome أو Safari مباشرة (وليس من داخل تطبيق أو التصفح الخاص) ثم أعد المحاولة.'}}}}catch(e){}
+try{const t=+localStorage.getItem('authlost');if(t){localStorage.removeItem('authlost');if(Date.now()-t<60000){const e=document.getElementById('te');if(e){e.style.color='#c62828';e.textContent='تعذر حفظ جلسة الدخول في هذا المتصفح. افتح الرابط في Chrome أو Safari مباشرة (وليس من داخل تطبيق أو التصفح الخاص) ثم أعد المحاولة. ['+location.protocol+(window.indexedDB?'':' بلا IndexedDB')+']'}}}}catch(e){}
 </script>
 <script>
 (function(){let k=0;const iv=setInterval(()=>{k++;try{if(typeof ME!=='undefined'&&ME){clearInterval(iv);if(ME.role!=='owner')document.body.classList.add('nonowner')}}catch(e){}if(k>60)clearInterval(iv)},300)})();
@@ -921,6 +913,88 @@ return '<div style="background:#fff;border:'+(hot?'2px solid #E76F51':'1px solid
 box.innerHTML=h;o.appendChild(box);document.body.appendChild(o);
 const x=()=>o.remove();o.onclick=e=>{if(e.target===o)x()};box.querySelector('#plX').onclick=x;
 box.querySelectorAll('[data-pid]').forEach(b=>b.onclick=()=>{document.getElementById('rPl').value=b.getAttribute('data-pid');x()})}
+</script>
+<script>
+/* ===== التاريخ الهجري + الاستيراد الذكي ===== */
+const _HF=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn',{year:'numeric',month:'numeric',day:'numeric',timeZone:'UTC'});
+function g2h(iso){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');if(!m)return '';try{const o={};_HF.formatToParts(new Date(Date.UTC(+m[1],+m[2]-1,+m[3],12))).forEach(x=>o[x.type]=x.value);return o.year+'/'+('0'+o.month).slice(-2)+'/'+('0'+o.day).slice(-2)}catch(e){return ''}}
+function h2g(y,mo,d){if(y<1300||y>1600||mo<1||mo>12||d<1||d>30)return '';const jd=d+Math.ceil(29.5*(mo-1))+(y-1)*354+Math.floor((3+11*y)/30)+1948439.5-1,base=Math.round(jd-2440587.5),want=y+'/'+('0'+mo).slice(-2)+'/'+('0'+d).slice(-2);for(let k=-3;k<=3;k++){const iso=new Date((base+k)*864e5+432e5).toISOString().slice(0,10);if(g2h(iso)===want)return iso}return ''}
+const calMode=()=>{try{return localStorage.getItem('calmode')==='h'?'h':'g'}catch(e){return 'g'}};
+function dFmt(iso){return esc(calMode()==='h'?((g2h(iso)||iso)+' هـ'):iso)}
+const HMN=['محرم','صفر','ربيع الأول','ربيع الآخر','جمادى الأولى','جمادى الآخرة','رجب','شعبان','رمضان','شوال','ذو القعدة','ذو الحجة'];
+let HY=0,HM=0;
+function hSplit(iso){const m=(g2h(iso)||'').split('/');return m.length===3?[+m[0],+m[1],+m[2]]:null}
+function addDays(iso,n){return new Date(Date.parse(iso+'T12:00:00Z')+n*864e5).toISOString().slice(0,10)}
+function hMonth(y,m){const f=h2g(y,m,1),nx=m===12?h2g(y+1,1,1):h2g(y,m+1,1);if(!f||!nx)return null;return{first:f,len:Math.round((Date.parse(nx)-Date.parse(f))/864e5)}}
+function calLabel(){const h=calMode()==='h',b=document.getElementById('calBtn');if(b)b.textContent=h?'هـ':'م';document.body.classList.toggle('hmode',h);document.querySelectorAll('.dtog button').forEach(x=>x.classList.toggle('on',x.dataset.m===(h?'h':'g')))}
+function calApply(){const sel=document.getElementById('calMonth');if(sel){if(calMode()==='h'){if(!HY){const p=hSplit(today())||[1447,1,1];HY=p[0];HM=p[1]}sel.innerHTML=HMN.map((n,i)=>'<option value="'+(i+1)+'">'+n+'</option>').join('');sel.value=HM;sel.onchange=function(){HM=+this.value;drawCal()}}else{sel.innerHTML=MN.map((n,i)=>'<option value="'+i+'">'+n+'</option>').join('');sel.value=calM;sel.onchange=function(){calM=+this.value;drawCal()}}}try{drawCal()}catch(e){}}
+function setCal(m){try{localStorage.setItem('calmode',m)}catch(e){}if(m==='h'){const p=hSplit(calY+'-'+('0'+(calM+1)).slice(-2)+'-15');if(p){HY=p[0];HM=p[1]}}calLabel();calApply();try{renderRec()}catch(e){}try{dash()}catch(e){}try{renderRem()}catch(e){}syncHij(true)}
+function calTog(){setCal(calMode()==='h'?'g':'h')}
+const _dc=drawCal,_chm=chMonth;
+drawCal=function(){if(calMode()!=='h')return _dc();const mo=hMonth(HY,HM);if(!mo){return _dc()}
+ document.getElementById('calMonth').value=HM;document.getElementById('calTitle').textContent=HMN[HM-1]+' '+HY+' هـ  ('+mo.first+' ← '+addDays(mo.first,mo.len-1)+')';document.getElementById('cdet').style.display='none';
+ const first=new Date(Date.parse(mo.first+'T12:00:00Z')).getUTCDay();let h='<div></div>'.repeat(first);
+ for(let i=1;i<=mo.len;i++){const ds=addDays(mo.first,i-1),db=bookings.filter(b=>b.date===ds&&(!CU||(b.unit||'')===CU));let cls='cd',info='<span style="color:#718093">متاح</span>';
+  if(db.length){if(db.some(b=>b.section==='قسمين')){cls+=' full';info='🔒 محجوز كامل'}else{cls+=' part';info='⚡ ('+[...new Set(db.map(b=>b.section))].join('، ')+')'}}
+  h+='<div class="'+cls+'" '+(db.length?'onclick="dayDet(\''+ds+'\')"':'')+'><b>'+i+'</b><small style="font-size:10px;color:#718093">'+ds.slice(8)+'/'+ds.slice(5,7)+'</small>'+info+'</div>'}
+ document.getElementById('cal').innerHTML=h};
+chMonth=function(d){if(calMode()!=='h')return _chm(d);HM+=d;if(HM>12){HM=1;HY++}if(HM<1){HM=12;HY--}drawCal()};
+const _AD='٠١٢٣٤٥٦٧٨٩',_PD='۰۱۲۳۴۵۶۷۸۹';
+const nd=v=>String(v==null?'':v).replace(/[٠-٩]/g,c=>_AD.indexOf(c)).replace(/[۰-۹]/g,c=>_PD.indexOf(c)).trim();
+function xPhone(v){const t=nd(v).replace(/[\s\-()+]/g,'');if(!/^\d{9,14}$/.test(t))return '';let p=t.replace(/^00/,'');if(p.startsWith('966'))p=p.slice(3);if(p.startsWith('0'))p=p.slice(1);return /^5\d{8}$/.test(p)?p:''}
+function xDate(v,serial){if(typeof v==='number'){if(serial&&v>=20000&&v<80000)return new Date(Math.round((Math.floor(v)-25569)*864e5)).toISOString().slice(0,10);return ''}
+ const t=nd(v);let m=t.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/),y,mo,d;
+ if(m){y=+m[1];mo=+m[2];d=+m[3]}else{m=t.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);if(!m)return '';d=+m[1];mo=+m[2];y=+m[3]}
+ if(mo>12&&d<=12){const x=mo;mo=d;d=x}
+ if(y>=1300&&y<1600)return h2g(y,mo,d);
+ if(y<1900||y>2100||mo<1||mo>12||d<1||d>31)return '';
+ const iso=y+'-'+('0'+mo).slice(-2)+'-'+('0'+d).slice(-2);return isNaN(new Date(iso+'T12:00:00Z'))?'':iso}
+function numOf(v){if(typeof v==='number')return isFinite(v)?v:null;const t=nd(v).replace(/ر\.?\s?س|ريال|sar|sr/ig,'').replace(/[,\s]/g,'');return /^\d+(\.\d+)?$/.test(t)?+t:null}
+function kw(v){const t=String(v).toLowerCase().trim();
+ if(/يوم\s*كامل|full\s*day/.test(t))return{f:'period',v:'يوم كامل'};if(/صباح|morning/.test(t))return{f:'period',v:'صباح'};if(/مساء|مسائ|evening/.test(t))return{f:'period',v:'مساء'};
+ if(/قسمين|كامل\s*الشاليه|\bboth\b/.test(t))return{f:'section',v:'قسمين'};if(/نساء|نسائ|women|ladies|female/.test(t))return{f:'section',v:'نساء'};if(/رجال|\bmen\b|\bmale\b/.test(t))return{f:'section',v:'رجال'};
+ if(/عربون|deposit/.test(t))return{f:'status',v:'مدفوع عربون'};if(/معلق|غير\s*مؤكد|pending|unconfirm/.test(t))return{f:'status',v:'غير مؤكد / معلق'};if(/ملغ|cancel/.test(t))return{f:'status',v:'ملغي'};if(/مؤكد|confirm|بالكامل|^تم/.test(t))return{f:'status',v:'مؤكد'};return null}
+const HINTS=[['paid',/واصل|مدفوع|عربون|دفع|paid|deposit|received/i],['rem',/متبقي|باقي|remaining|balance|due/i],['price',/إيجار|ايجار|سعر|إجمالي|اجمالي|مبلغ|قيمة|total|price|amount|rent/i],['phone',/جوال|هاتف|موبايل|واتس|phone|mobile|tel|whats/i],['date',/تاريخ|موعد|date/i],['name',/اسم|مستأجر|عميل|نزيل|name|customer|client|tenant|guest/i]];
+function smartParse(rows){const out={recs:[],bad:0};rows=rows.filter(r=>r&&r.some(c=>c!==''&&c!=null));if(!rows.length)return out;
+ let hint={},start=0;for(let i=0;i<Math.min(6,rows.length);i++){const hs={};let hit=0;rows[i].forEach((c,j)=>{if(typeof c!=='string')return;const x=HINTS.find(h=>h[1].test(c));if(x){hs[j]=x[0];hit++}});if(hit>=2){hint=hs;start=i+1;break}}
+ const data=rows.slice(start),width=Math.max(...rows.map(r=>r.length)),serial={};
+ for(let j=0;j<width;j++){const ns=data.map(r=>r[j]).filter(v=>typeof v==='number'&&Number.isInteger(v));serial[j]=hint[j]==='date'||(ns.length>=2&&ns.filter(v=>v>=36000&&v<=62000).length/ns.length>=.6)}
+ data.forEach(r=>{const rec={nums:[],names:[]};
+  r.forEach((v,j)=>{if(v===''||v==null)return;const h=hint[j];
+   if(h==='price'||h==='paid'||h==='rem'){const n=numOf(v);if(n!==null){rec[h]=n;return}}
+   const ph=xPhone(v);if(ph&&!rec.phone){rec.phone=ph;return}
+   const dt=xDate(v,serial[j]);if(dt&&!rec.date){rec.date=dt;return}
+   if(typeof v==='string'){const k=kw(v);if(k){if(!rec[k.f])rec[k.f]=k.v;return}}
+   const n=numOf(v);if(n!==null){rec.nums.push(n);return}
+   const s=String(v).trim();if(/[A-Za-z\u0600-\u06FF]{2,}/.test(s)&&s.length<=60&&!/^\d/.test(nd(s)))rec.names.push({s,h:h==='name'})});
+  if(!rec.date){const ix=rec.nums.findIndex(n=>Number.isInteger(n)&&n>=36000&&n<=62000);if(ix>-1){rec.date=xDate(rec.nums[ix],true);rec.nums.splice(ix,1)}}
+  const nm=(rec.names.find(x=>x.h)||rec.names[0]||{}).s;
+  if(!nm||!rec.date){if(nm||rec.date||rec.phone)out.bad++;return}
+  let price=rec.price,paid=rec.paid;if(price===undefined&&rec.nums.length)price=rec.nums.shift();if(paid===undefined&&rec.nums.length)paid=rec.nums.shift();
+  price=price||0;paid=paid||0;if(rec.price===undefined&&paid>price){const t=price;price=paid;paid=t}
+  out.recs.push({name:nm,phone:rec.phone||'500000000',date:rec.date,period:rec.period||'مساء',section:rec.section||'قسمين',price,paid,status:rec.status||'مؤكد'})});
+ return out}
+function markImportDone(){try{if(typeof TEN!=='undefined'&&TEN){TEN.importDone=Date.now();if(typeof db!=='undefined')db.ref('tenants/'+TID+'/importDone').set(TEN.importDone).catch(()=>{})}}catch(e){}
+ try{document.querySelectorAll('[data-ft="import"]').forEach(x=>x.style.display='none')}catch(e){}}
+function importXls(ev){if(!HAS('import')){alert('الاستيراد خدمة استثنائية تُفعَّل من الإدارة عند الحاجة. تواصل مع الدعم.');return}
+ const f=ev.target.files[0];if(!f)return;const r=new FileReader();
+ r.onload=e=>{try{const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});let rows=[];
+  wb.SheetNames.forEach(n=>{XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:'',raw:true}).forEach(x=>rows.push(x))});
+  const res=smartParse(rows),key=b=>[b.phone,b.date,String(b.name).trim().toLowerCase()].join('|'),have=new Set(bookings.map(key));
+  const add=[];let dup=0;res.recs.slice(0,5000).forEach((x,i)=>{const b=sanB(Object.assign({id:Date.now()+i,method:'استيراد إكسل'},x));if(!b)return;if(have.has(key(b))){dup++;return}have.add(key(b));add.push(b)});
+  if(!add.length){alert('لم أتعرف على حجوزات جديدة في الملف.'+(dup?'\nالمكرر: '+dup:'')+(res.bad?'\nصفوف غير مفهومة: '+res.bad:''));return}
+  if(!confirm('تم التعرف على '+add.length+' حجز'+(dup?' (تخطي '+dup+' مكرر)':'')+(res.bad?'، وتجاهل '+res.bad+' صف غير مفهوم':'')+'.\nهل تضيفها إلى الحجوزات؟'))return;
+  bookings=bookings.concat(add);save();try{renderRec();dash()}catch(e){}markImportDone();alert('تم استيراد '+add.length+' حجز بنجاح.\nأُغلقت خدمة الاستيراد تلقائياً.')}catch(err){alert('حدث خطأ أثناء قراءة الملف.')}};
+ r.readAsArrayBuffer(f);ev.target.value=''}
+function fillHij(){const D=document.getElementById('hD'),M=document.getElementById('hM'),Y=document.getElementById('hY');if(!D||D.options.length)return;D.innerHTML=Array.from({length:30},(_,i)=>'<option>'+(i+1)+'</option>').join('');M.innerHTML=HMN.map((n,i)=>'<option value="'+(i+1)+'">'+n+'</option>').join('');const p=hSplit(today())||[1447,1,1];Y.innerHTML=Array.from({length:7},(_,i)=>'<option>'+(p[0]-2+i)+'</option>').join('')}
+function syncHij(force){fillHij();const g=document.getElementById('bDate'),o=document.getElementById('bHijOut');if(!g)return;const a=document.activeElement;if(a&&/^h[DMY]$/.test(a.id||'')&&!force)return;
+ const p=hSplit(g.value);if(!p){if(o)o.textContent='';return}
+ const Y=document.getElementById('hY');if(![...Y.options].some(x=>+x.value===p[0]))Y.insertAdjacentHTML('beforeend','<option>'+p[0]+'</option>');
+ document.getElementById('hD').value=p[2];document.getElementById('hM').value=p[1];Y.value=p[0];
+ if(o)o.textContent=calMode()==='h'?'يوافق: '+g.value:'يوافق: '+g2h(g.value)+' هـ'}
+function hijIn(){const g=document.getElementById('bDate'),o=document.getElementById('bHijOut'),iso=h2g(+document.getElementById('hY').value,+document.getElementById('hM').value,+document.getElementById('hD').value);if(iso){g.value=iso;o.textContent='يوافق: '+iso}else o.textContent='اليوم غير صحيح لهذا الشهر'}
+setInterval(syncHij,700);calLabel();
+if(calMode()==='h'){try{calApply()}catch(e){}}
 </script>
 </body>
 </html>
