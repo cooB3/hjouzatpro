@@ -206,6 +206,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
  <section id="calendar" class="tab">
   <div class="ttl">تقويم الحجوزات الذكي</div>
   <div class="card">
+   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>عرض التقويم</b><span class="dtog"><button type="button" data-m="g" onclick="setCal('g')">ميلادي</button><button type="button" data-m="h" onclick="setCal('h')">هجري</button></span></div>
    <div class="lg"><span><i style="background:#ff4757"></i>محجوز كامل</span><span><i style="background:#ffa502"></i>جزئي</span><span><i style="background:#fff"></i>متاح</span></div>
    <div class="row" style="margin:0 0 10px;align-items:center">
     <button class="btn" style="width:auto" onclick="chMonth(-1)"><i class="fa-solid fa-chevron-right"></i></button>
@@ -301,7 +302,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
 </main>
 
 <div id="rm" class="modal"><div class="mc">
- <div style="text-align:left;margin-bottom:8px"><select id="invLangSel" style="display:none;width:auto;padding:5px" onchange="setLang(this.value)"><option value="ar">السند: عربي</option><option value="en">Receipt: English</option></select></div>
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="display:flex;align-items:center;gap:6px;font-size:13px">التاريخ: <span class="dtog"><button type="button" data-m="g" onclick="setCal('g')">ميلادي</button><button type="button" data-m="h" onclick="setCal('h')">هجري</button></span></span><select id="invLangSel" style="display:none;width:auto;padding:5px" onchange="setLang(this.value)"><option value="ar">السند: عربي</option><option value="en">Receipt: English</option></select></div>
  <div id="cfgrc">
   <label>سياسة العربون والتأمين</label><textarea id="cPol" rows="3"></textarea>
   <label>التعليمات والشروط العامة</label><textarea id="cIns" rows="4"></textarea>
@@ -587,8 +588,8 @@ function clrImg(kind){if(!ME||ME.role!=='owner'){alert('إعدادات السن�
 function saveRc(){if(!ME||ME.role!=='owner'){alert('إعدادات السند من صلاحية المالك فقط');return}rc={logo:rc.logo,qr:rc.qr,pol:$('cPol').value,ins:$('cIns').value,bank:$('cBank').value,ben:$('cBen').value,acc:$('cAcc').value,iban:$('cIban').value};applyRc();persistRcAll().then(()=>alert('تم حفظ إعدادات السند، وستظهر في سندات جميع حسابات المنشأة')).catch(x=>alert('تعذر الحفظ في السحابة: '+fbErr(x)))}
 function openRc(id){
  const b=bookings.find(x=>String(x.id)===String(id));if(!b)return;active=b;
- $('iId').textContent='#'+b.id;$('iDt').textContent=new Date().toLocaleString('ar-SA',{timeZone:'Asia/Riyadh'});
- $('iName').textContent=b.name;$('iPhone').textContent=phoneFmt(b.phone);$('iDate').textContent=dual(b.date);$('iPer').textContent=b.period;
+ $('iId').textContent='#'+b.id;$('iDt').textContent=rcNow();
+ $('iName').textContent=b.name;$('iPhone').textContent=phoneFmt(b.phone);$('iDate').textContent=rcDate(b.date);$('iPer').textContent=b.period;
  $('iSec').textContent=b.section;$('iPrice').textContent=b.price+' ر.س';$('iPaid').textContent=b.paid+' ر.س';$('iRem').textContent=rem(b)+' ر.س';
  $('iSt').textContent=b.status;$('iSt').className='bd '+stCls(b.status);
  $('cfgrc').style.display='none';invLang();$('rm').style.display='flex'}
@@ -926,7 +927,7 @@ let HY=0,HM=0;
 function hSplit(iso){const m=(g2h(iso)||'').split('/');return m.length===3?[+m[0],+m[1],+m[2]]:null}
 function addDays(iso,n){return new Date(Date.parse(iso+'T12:00:00Z')+n*864e5).toISOString().slice(0,10)}
 function hMonth(y,m){const f=h2g(y,m,1),nx=m===12?h2g(y+1,1,1):h2g(y,m+1,1);if(!f||!nx)return null;return{first:f,len:Math.round((Date.parse(nx)-Date.parse(f))/864e5)}}
-function calLabel(){const h=calMode()==='h',b=document.getElementById('calBtn');if(b)b.textContent=h?'هـ':'م';document.body.classList.toggle('hmode',h);document.querySelectorAll('.dtog button').forEach(x=>x.classList.toggle('on',x.dataset.m===(h?'h':'g')))}
+function calLabel(){const h=calMode()==='h',b=document.getElementById('calBtn');if(b){b.textContent=h?'هجري':'ميلادي';b.style.fontSize='12px';b.style.padding='0 10px';b.style.minWidth='0'}document.body.classList.toggle('hmode',h);document.querySelectorAll('.dtog button').forEach(x=>x.classList.toggle('on',x.dataset.m===(h?'h':'g')))}
 function calApply(){const sel=document.getElementById('calMonth');if(sel){if(calMode()==='h'){if(!HY){const p=hSplit(today())||[1447,1,1];HY=p[0];HM=p[1]}sel.innerHTML=HMN.map((n,i)=>'<option value="'+(i+1)+'">'+n+'</option>').join('');sel.value=HM;sel.onchange=function(){HM=+this.value;drawCal()}}else{sel.innerHTML=MN.map((n,i)=>'<option value="'+i+'">'+n+'</option>').join('');sel.value=calM;sel.onchange=function(){calM=+this.value;drawCal()}}}try{drawCal()}catch(e){}}
 function setCal(m){try{localStorage.setItem('calmode',m)}catch(e){}if(m==='h'){const p=hSplit(calY+'-'+('0'+(calM+1)).slice(-2)+'-15');if(p){HY=p[0];HM=p[1]}}calLabel();calApply();try{renderRec()}catch(e){}try{dash()}catch(e){}try{renderRem()}catch(e){}syncHij(true)}
 function calTog(){setCal(calMode()==='h'?'g':'h')}
@@ -995,6 +996,11 @@ function syncHij(force){fillHij();const g=document.getElementById('bDate'),o=doc
 function hijIn(){const g=document.getElementById('bDate'),o=document.getElementById('bHijOut'),iso=h2g(+document.getElementById('hY').value,+document.getElementById('hM').value,+document.getElementById('hD').value);if(iso){g.value=iso;o.textContent='يوافق: '+iso}else o.textContent='اليوم غير صحيح لهذا الشهر'}
 setInterval(syncHij,700);calLabel();
 if(calMode()==='h'){try{calApply()}catch(e){}}
+</script>
+<script>
+function rcDate(d){if(!d)return '';const h=g2h(d);if(!h)return d;return calMode()==='h'?h+' هـ ('+d+')':d+' ('+h+' هـ)'}
+function rcNow(){try{return new Date().toLocaleString(calMode()==='h'?'ar-SA-u-ca-islamic-umalqura-nu-latn':'ar-SA-u-ca-gregory-nu-latn',{timeZone:'Asia/Riyadh'})}catch(e){return new Date().toLocaleString()}}
+(function(){const o=setCal;setCal=function(m){o(m);try{const rm=document.getElementById('rm');if(rm&&getComputedStyle(rm).display!=='none'&&active)openRc(active.id)}catch(e){}}})();
 </script>
 </body>
 </html>
