@@ -87,6 +87,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
 #splash .sp-by{position:absolute;bottom:34px;left:0;right:0;font-size:14px;line-height:1.7;opacity:.9;text-align:center}
 @keyframes spu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}.dtog{display:inline-flex;border:1px solid #E76F51;border-radius:8px;overflow:hidden;flex:none}.dtog button{min-height:26px!important;padding:2px 10px;border:0;background:#fff;color:#E76F51;font-size:12px;font-weight:800;width:auto}.dtog button.on{background:#E76F51;color:#fff}
 #hijRow{display:none;gap:6px}body.hmode #hijRow{display:flex}body.hmode #bDate{position:absolute;opacity:0;pointer-events:none;height:1px;width:1px}
+#csHij{display:none;gap:6px;flex:1}body.hmode #csHij{display:flex}body.hmode #calSearch{display:none}
 </style>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"><link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <meta name="theme-color" content="#E76F51"><meta property="og:type" content="website"><meta property="og:site_name" content="حجوزات"><meta property="og:locale" content="ar_SA"><meta property="og:title" content="حجوزات - نظام إدارة الحجوزات"><meta property="og:description" content="أدِر حجوزات منشأتك وعملاءك ومصاريفك من مكان واحد"><meta property="og:image" content="https://raw.githubusercontent.com/cooB3/gbj/main/og-image.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://raw.githubusercontent.com/cooB3/gbj/main/og-image.png">
@@ -152,7 +153,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
  <div class="banner"><h2><i class="fa-solid fa-house-chimney-window"></i> <span id="tName"></span></h2><p id="tWelcome">نظام إدارة الحجوزات والماليات</p></div>
  <div class="top">
   <button class="menu" id="menuBtn"><i class="fa-solid fa-bars"></i></button>
-  <div style="display:flex;gap:6px;align-items:center"><button class="menu" id="calBtn" onclick="calTog()" title="تبديل التاريخ: ميلادي / هجري" style="background:#2e86de;font-size:14px;font-weight:800;min-width:40px">م</button><button class="menu" id="bellBtn" title="التنبيهات" onclick="bellTog()" style="position:relative;background:#5f6b7a"><i class="fa-solid fa-bell"></i><span id="bellN" style="display:none;position:absolute;top:-5px;left:-5px;min-width:18px;height:18px;border-radius:9px;background:#e53935;color:#fff;font-size:11px;align-items:center;justify-content:center;padding:0 4px">0</span></button><button class="menu" style="background:#c62828" title="خروج" onclick="tLogout()"><i class="fa-solid fa-right-from-bracket"></i></button><select id="period" style="width:auto;padding:6px 10px"></select></div>
+  <div style="display:flex;gap:6px;align-items:center"><button class="menu" id="bellBtn" title="التنبيهات" onclick="bellTog()" style="position:relative;background:#5f6b7a"><i class="fa-solid fa-bell"></i><span id="bellN" style="display:none;position:absolute;top:-5px;left:-5px;min-width:18px;height:18px;border-radius:9px;background:#e53935;color:#fff;font-size:11px;align-items:center;justify-content:center;padding:0 4px">0</span></button><button class="menu" style="background:#c62828" title="خروج" onclick="tLogout()"><i class="fa-solid fa-right-from-bracket"></i></button><select id="period" style="width:auto;padding:6px 10px"></select></div>
  </div>
 
  <section id="dashboard" class="tab active">
@@ -206,14 +207,13 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
  <section id="calendar" class="tab">
   <div class="ttl">تقويم الحجوزات الذكي</div>
   <div class="card">
-   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>عرض التقويم</b><span class="dtog"><button type="button" data-m="g" onclick="setCal('g')">ميلادي</button><button type="button" data-m="h" onclick="setCal('h')">هجري</button></span></div>
    <div class="lg"><span><i style="background:#ff4757"></i>محجوز كامل</span><span><i style="background:#ffa502"></i>جزئي</span><span><i style="background:#fff"></i>متاح</span></div>
    <div class="row" style="margin:0 0 10px;align-items:center">
     <button class="btn" style="width:auto" onclick="chMonth(-1)"><i class="fa-solid fa-chevron-right"></i></button>
     <select id="calMonth" onchange="calM=+this.value;drawCal()"></select>
     <button class="btn" style="width:auto" onclick="chMonth(1)"><i class="fa-solid fa-chevron-left"></i></button>
    </div>
-   <div class="row" style="margin:0 0 10px"><input type="date" id="calSearch"><button class="btn b2" style="width:auto" onclick="checkDate()"><i class="fa-solid fa-search"></i></button></div>
+   <div style="margin:0 0 10px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b style="font-size:14px">استعلام عن تاريخ</b><span class="dtog"><button type="button" data-m="g" onclick="setCal('g')">ميلادي</button><button type="button" data-m="h" onclick="setCal('h')">هجري</button></span></div><div class="row"><input type="date" id="calSearch"><div id="csHij"><select id="csD"></select><select id="csM"></select><select id="csY"></select></div><button class="btn b2" style="width:auto" onclick="checkDate()"><i class="fa-solid fa-search"></i></button></div></div>
    <select id="calUnit" style="display:none;margin-bottom:8px" onchange="CU=this.value;drawCal()"></select>
    <div id="calTitle" style="text-align:center;font-weight:900;margin-bottom:8px"></div>
    <div class="cw"><div>أحد</div><div>إثنين</div><div>ثلاثاء</div><div>أربعاء</div><div>خميس</div><div>جمعة</div><div>سبت</div></div>
@@ -921,25 +921,26 @@ const _HF=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn',{year:'nume
 function g2h(iso){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');if(!m)return '';try{const o={};_HF.formatToParts(new Date(Date.UTC(+m[1],+m[2]-1,+m[3],12))).forEach(x=>o[x.type]=x.value);return o.year+'/'+('0'+o.month).slice(-2)+'/'+('0'+o.day).slice(-2)}catch(e){return ''}}
 function h2g(y,mo,d){if(y<1300||y>1600||mo<1||mo>12||d<1||d>30)return '';const jd=d+Math.ceil(29.5*(mo-1))+(y-1)*354+Math.floor((3+11*y)/30)+1948439.5-1,base=Math.round(jd-2440587.5),want=y+'/'+('0'+mo).slice(-2)+'/'+('0'+d).slice(-2);for(let k=-3;k<=3;k++){const iso=new Date((base+k)*864e5+432e5).toISOString().slice(0,10);if(g2h(iso)===want)return iso}return ''}
 const calMode=()=>{try{return localStorage.getItem('calmode')==='h'?'h':'g'}catch(e){return 'g'}};
-function dFmt(iso){return esc(calMode()==='h'?((g2h(iso)||iso)+' هـ'):iso)}
+function dFmt(iso){const h=g2h(iso);return esc(iso)+(h?'<br><small style="color:#718093">'+h+' هـ</small>':'')}
 const HMN=['محرم','صفر','ربيع الأول','ربيع الآخر','جمادى الأولى','جمادى الآخرة','رجب','شعبان','رمضان','شوال','ذو القعدة','ذو الحجة'];
 let HY=0,HM=0;
 function hSplit(iso){const m=(g2h(iso)||'').split('/');return m.length===3?[+m[0],+m[1],+m[2]]:null}
 function addDays(iso,n){return new Date(Date.parse(iso+'T12:00:00Z')+n*864e5).toISOString().slice(0,10)}
 function hMonth(y,m){const f=h2g(y,m,1),nx=m===12?h2g(y+1,1,1):h2g(y,m+1,1);if(!f||!nx)return null;return{first:f,len:Math.round((Date.parse(nx)-Date.parse(f))/864e5)}}
 function calLabel(){const h=calMode()==='h',b=document.getElementById('calBtn');if(b){b.textContent=h?'هجري':'ميلادي';b.style.fontSize='12px';b.style.padding='0 10px';b.style.minWidth='0'}document.body.classList.toggle('hmode',h);document.querySelectorAll('.dtog button').forEach(x=>x.classList.toggle('on',x.dataset.m===(h?'h':'g')))}
-function calApply(){const sel=document.getElementById('calMonth');if(sel){if(calMode()==='h'){if(!HY){const p=hSplit(today())||[1447,1,1];HY=p[0];HM=p[1]}sel.innerHTML=HMN.map((n,i)=>'<option value="'+(i+1)+'">'+n+'</option>').join('');sel.value=HM;sel.onchange=function(){HM=+this.value;drawCal()}}else{sel.innerHTML=MN.map((n,i)=>'<option value="'+i+'">'+n+'</option>').join('');sel.value=calM;sel.onchange=function(){calM=+this.value;drawCal()}}}try{drawCal()}catch(e){}}
-function setCal(m){try{localStorage.setItem('calmode',m)}catch(e){}if(m==='h'){const p=hSplit(calY+'-'+('0'+(calM+1)).slice(-2)+'-15');if(p){HY=p[0];HM=p[1]}}calLabel();calApply();try{renderRec()}catch(e){}try{dash()}catch(e){}try{renderRem()}catch(e){}syncHij(true)}
+function setCal(m){try{localStorage.setItem('calmode',m)}catch(e){}if(m==='h'){const p=hSplit(calY+'-'+('0'+(calM+1)).slice(-2)+'-15');if(p){HY=p[0];HM=p[1]}}calLabel();try{drawCal()}catch(e){}try{renderRec()}catch(e){}try{dash()}catch(e){}try{renderRem()}catch(e){}syncHij(true)}
 function calTog(){setCal(calMode()==='h'?'g':'h')}
-const _dc=drawCal,_chm=chMonth;
-drawCal=function(){if(calMode()!=='h')return _dc();const mo=hMonth(HY,HM);if(!mo){return _dc()}
- document.getElementById('calMonth').value=HM;document.getElementById('calTitle').textContent=HMN[HM-1]+' '+HY+' هـ  ('+mo.first+' ← '+addDays(mo.first,mo.len-1)+')';document.getElementById('cdet').style.display='none';
- const first=new Date(Date.parse(mo.first+'T12:00:00Z')).getUTCDay();let h='<div></div>'.repeat(first);
- for(let i=1;i<=mo.len;i++){const ds=addDays(mo.first,i-1),db=bookings.filter(b=>b.date===ds&&(!CU||(b.unit||'')===CU));let cls='cd',info='<span style="color:#718093">متاح</span>';
+function drawCal(){const $=id=>document.getElementById(id);$('calMonth').value=calM;
+ const nd2=new Date(calY,calM+1,0).getDate(),p1=hSplit(calY+'-'+('0'+(calM+1)).slice(-2)+'-01'),p2=hSplit(calY+'-'+('0'+(calM+1)).slice(-2)+'-'+('0'+nd2).slice(-2));
+ const hs=p1&&p2?(p1[1]===p2[1]?HMN[p1[1]-1]+' '+p1[0]:HMN[p1[1]-1]+' ← '+HMN[p2[1]-1]+' '+p2[0]):'';
+ $('calTitle').innerHTML=MN[calM]+' '+calY+(hs?'<div style="font-size:13px;color:#718093;font-weight:600">'+hs+' هـ</div>':'');$('cdet').style.display='none';
+ const first=new Date(calY,calM,1).getDay();let h='<div></div>'.repeat(first);
+ for(let i=1;i<=nd2;i++){const ds=calY+'-'+('0'+(calM+1)).slice(-2)+'-'+('0'+i).slice(-2),hp=hSplit(ds),db=bookings.filter(b=>b.date===ds&&(!CU||(b.unit||'')===CU));let cls='cd',info='<span style="color:#718093">متاح</span>';
   if(db.length){if(db.some(b=>b.section==='قسمين')){cls+=' full';info='🔒 محجوز كامل'}else{cls+=' part';info='⚡ ('+[...new Set(db.map(b=>b.section))].join('، ')+')'}}
-  h+='<div class="'+cls+'" '+(db.length?'onclick="dayDet(\''+ds+'\')"':'')+'><b>'+i+'</b><small style="font-size:10px;color:#718093">'+ds.slice(8)+'/'+ds.slice(5,7)+'</small>'+info+'</div>'}
- document.getElementById('cal').innerHTML=h};
-chMonth=function(d){if(calMode()!=='h')return _chm(d);HM+=d;if(HM>12){HM=1;HY++}if(HM<1){HM=12;HY--}drawCal()};
+  h+='<div class="'+cls+'" '+(db.length?'onclick="dayDet(\''+ds+'\')"':'')+'><b>'+i+'</b>'+(hp?'<small style="font-size:10px;color:#718093">'+(hp[2]===1?HMN[hp[1]-1]:hp[2])+' هـ</small>':'')+info+'</div>'}
+ $('cal').innerHTML=h}
+function fillCs(){const D=document.getElementById('csD'),M=document.getElementById('csM'),Y=document.getElementById('csY');if(!D||D.options.length)return;D.innerHTML=Array.from({length:30},(_,i)=>'<option>'+(i+1)+'</option>').join('');M.innerHTML=HMN.map((n,i)=>'<option value="'+(i+1)+'">'+n+'</option>').join('');const p=hSplit(today())||[1447,1,1];Y.innerHTML=Array.from({length:7},(_,i)=>'<option>'+(p[0]-2+i)+'</option>').join('');D.value=p[2];M.value=p[1];Y.value=p[0]}
+const _cd=checkDate;checkDate=function(){if(calMode()==='h'){fillCs();const iso=h2g(+document.getElementById('csY').value,+document.getElementById('csM').value,+document.getElementById('csD').value);if(!iso){alert('التاريخ الهجري غير صحيح لهذا الشهر');return}document.getElementById('calSearch').value=iso}return _cd()};
 const _AD='٠١٢٣٤٥٦٧٨٩',_PD='۰۱۲۳۴۵۶۷۸۹';
 const nd=v=>String(v==null?'':v).replace(/[٠-٩]/g,c=>_AD.indexOf(c)).replace(/[۰-۹]/g,c=>_PD.indexOf(c)).trim();
 function xPhone(v){const t=nd(v).replace(/[\s\-()+]/g,'');if(!/^\d{9,14}$/.test(t))return '';let p=t.replace(/^00/,'');if(p.startsWith('966'))p=p.slice(3);if(p.startsWith('0'))p=p.slice(1);return /^5\d{8}$/.test(p)?p:''}
@@ -995,7 +996,7 @@ function syncHij(force){fillHij();const g=document.getElementById('bDate'),o=doc
  if(o)o.textContent=calMode()==='h'?'يوافق: '+g.value:'يوافق: '+g2h(g.value)+' هـ'}
 function hijIn(){const g=document.getElementById('bDate'),o=document.getElementById('bHijOut'),iso=h2g(+document.getElementById('hY').value,+document.getElementById('hM').value,+document.getElementById('hD').value);if(iso){g.value=iso;o.textContent='يوافق: '+iso}else o.textContent='اليوم غير صحيح لهذا الشهر'}
 setInterval(syncHij,700);calLabel();
-if(calMode()==='h'){try{calApply()}catch(e){}}
+fillCs();
 </script>
 <script>
 function rcDate(d){if(!d)return '';const h=g2h(d);if(!h)return d;return calMode()==='h'?h+' هـ ('+d+')':d+' ('+h+' هـ)'}
