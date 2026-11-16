@@ -88,6 +88,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
 @keyframes spu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}.dtog{display:inline-flex;border:1px solid #E76F51;border-radius:8px;overflow:hidden;flex:none}.dtog button{min-height:26px!important;padding:2px 10px;border:0;background:#fff;color:#E76F51;font-size:12px;font-weight:800;width:auto}.dtog button.on{background:#E76F51;color:#fff}
 #hijRow{display:none;gap:6px}body.hmode #hijRow{display:flex}body.hmode #bDate{position:absolute;opacity:0;pointer-events:none;height:1px;width:1px}
 #csHij{display:none;gap:6px;flex:1}body.hmode #csHij{display:flex}body.hmode #calSearch{display:none}
+.uc{display:none}body.hasunits .uc{display:table-cell}
 </style>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"><link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <meta name="theme-color" content="#E76F51"><meta property="og:type" content="website"><meta property="og:site_name" content="حجوزات"><meta property="og:locale" content="ar_SA"><meta property="og:title" content="حجوزات - نظام إدارة الحجوزات"><meta property="og:description" content="أدِر حجوزات منشأتك وعملاءك ومصاريفك من مكان واحد"><meta property="og:image" content="https://raw.githubusercontent.com/cooB3/gbj/main/og-image.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://raw.githubusercontent.com/cooB3/gbj/main/og-image.png">
@@ -184,6 +185,12 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
   </div>
   <div class="card">
    <h3 id="formTitle">حجز جديد للشاليه</h3>
+   <div class="card" id="sfCard" data-ft="smartfill"><h3>التعبئة الذكية للحجز</h3>
+    <div style="font-size:13px;color:#6B5646;margin-bottom:8px">أرسل للعميل نموذجاً يعبّئه، ثم الصق رده هنا فيعبّئ البرنامج بيانات الحجز تلقائياً.</div>
+    <label>نموذج الرسالة (يمكنك تعديله)</label><textarea id="sfTpl" rows="8" style="width:100%"></textarea>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px"><button type="button" class="btn b3" style="width:auto" onclick="sfSend()">إرسال النموذج للعميل (واتساب)</button><button type="button" class="btn b2" style="width:auto" onclick="sfCopy()">نسخ النموذج</button></div>
+    <label>رد العميل أو رسالته</label><textarea id="sfText" rows="5" style="width:100%" placeholder="الصق هنا رد العميل..."></textarea>
+    <button type="button" class="btn b3" style="margin-top:8px" onclick="sfFill()">عبّئ بيانات الحجز تلقائياً</button><div id="sfOut" style="margin-top:10px;font-size:14px;line-height:1.9"></div></div>
    <form id="bf">
     <input type="hidden" id="bId">
     <div class="grid">
@@ -247,13 +254,14 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
     <div class="grid">
      <div><label>البند / الوصف</label><input id="eTitle" required></div>
      <div><label>التصنيف</label><select id="eCat"><option>كهرباء وماء</option><option>نظافة وضيافة</option><option>صيانة وإصلاحات</option><option>رواتب وأجور</option><option>أخرى</option></select></div>
-     <div><label>المبلغ (ر.س)</label><input type="number" id="eAmt" required></div>
+     <div id="eUnitWrap" style="display:none"><label>الوحدة / الفرع</label><select id="eUnit"></select></div>
+      <div><label>المبلغ (ر.س)</label><input type="number" id="eAmt" required></div>
      <div><label>التاريخ</label><input type="date" id="eDate" required></div>
     </div>
     <button class="btn b2" type="submit">تسجيل المصروف</button>
    </form>
   </div>
-  <div class="card"><h3>سجل المصروفات</h3><div class="tr"><table><thead><tr><th>البند</th><th>التصنيف</th><th>المبلغ</th><th>التاريخ</th><th>إجراء</th></tr></thead><tbody id="expBody"></tbody></table></div></div>
+  <div class="card"><h3>سجل المصروفات</h3><div class="tr"><table><thead><tr><th>البند</th><th>التصنيف</th><th class="uc">الوحدة</th><th>المبلغ</th><th>التاريخ</th><th>إجراء</th></tr></thead><tbody id="expBody"></tbody></table></div></div>
  </section>
 
  <section id="reports" class="tab">
@@ -279,7 +287,7 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
    <button class="btn b3" style="margin-top:8px" onclick="saveTpl()">حفظ النصوص</button></div></section>
  <section id="customers" class="tab"><div class="ttl">سجل العملاء</div><div class="card"><div class="tr"><table><thead><tr><th>العميل</th><th>الجوال</th><th>الحجوزات</th><th>المدفوع</th><th>آخر حجز</th><th>ملاحظة</th><th></th></tr></thead><tbody id="cusBody"></tbody></table></div></div></section>
  <section id="staff" class="tab"><div class="ttl">الموظفون <small id="stLim" style="font-size:11px;color:#718093"></small></div>
-  <div class="card"><h3>إضافة موظف (يسجل الحجوزات فقط)</h3><div class="grid"><div><label>الاسم</label><input id="sN"></div><div><label>البريد الإلكتروني</label><input id="sU" type="email" dir="ltr"></div><div><label>كلمة المرور (6 أحرف)</label><input id="sP" type="password"></div><div><label>الصلاحية</label><select id="sR"><option value="staff">موظف (يسجل الحجوزات فقط)</option><option value="owner">مدير (نفس صلاحيات المالك)</option></select></div></div><button class="btn b3" onclick="addStaff()">إضافة</button></div>
+  <div class="card"><h3>إضافة موظف (يسجل الحجوزات فقط)</h3><div class="grid"><div><label>الاسم</label><input id="sN"></div><div><label>البريد الإلكتروني</label><input id="sU" type="email" dir="ltr"></div><div><label>كلمة المرور (6 أحرف)</label><input id="sP" type="password"></div><div style="display:none"><select id="sR"><option value="staff">موظف</option></select></div></div><button class="btn b3" onclick="addStaff()">إضافة</button></div>
   <div class="card"><div class="tr"><table><thead><tr><th>الاسم</th><th>المستخدم</th><th>الدور</th><th>الحالة</th><th></th></tr></thead><tbody id="stBody"></tbody></table></div></div></section>
  <section id="units" class="tab"><div class="ttl">الوحدات والفروع <small id="unLim" style="font-size:11px;color:#718093"></small></div>
   <div class="card"><div class="row" style="margin:0"><input id="uN" placeholder="اسم الوحدة أو الفرع، مثل: شاليه 2"><button class="btn b3" style="width:auto" onclick="addUnit()">إضافة</button></div></div>
@@ -340,6 +348,14 @@ body.nonowner [onclick="rcCfgToggle()"],body.nonowner #cfgrc{display:none!import
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
+/* مساعدات التاريخ: تُعرَّف قبل الشيفرة الرئيسية لأنها تُستعمل عند أول عرض */
+const _HF=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn',{year:'numeric',month:'numeric',day:'numeric',timeZone:'UTC'});
+function g2h(iso){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');if(!m)return '';try{const o={};_HF.formatToParts(new Date(Date.UTC(+m[1],+m[2]-1,+m[3],12))).forEach(x=>o[x.type]=x.value);return o.year+'/'+('0'+o.month).slice(-2)+'/'+('0'+o.day).slice(-2)}catch(e){return ''}}
+function h2g(y,mo,d){if(y<1300||y>1600||mo<1||mo>12||d<1||d>30)return '';const jd=d+Math.ceil(29.5*(mo-1))+(y-1)*354+Math.floor((3+11*y)/30)+1948439.5-1,base=Math.round(jd-2440587.5),want=y+'/'+('0'+mo).slice(-2)+'/'+('0'+d).slice(-2);for(let k=-3;k<=3;k++){const iso=new Date((base+k)*864e5+432e5).toISOString().slice(0,10);if(g2h(iso)===want)return iso}return ''}
+const calMode=()=>{try{return localStorage.getItem('calmode')==='h'?'h':'g'}catch(e){return 'g'}};
+function dFmt(iso){const e=String(iso==null?'':iso).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),h=g2h(iso);return e+(h?'<br><small style="color:#718093">'+h+' هـ</small>':'')}
+</script>
+<script>
 const $=id=>document.getElementById(id);
 const MN=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
@@ -366,8 +382,8 @@ function fillLogin(S){const esc=x=>String(x??'').replace(/[&<>"']/g,'');const st
 fillLogin(SA.settings);db.ref('system/settings').once('value').then(x=>{if(x.val())fillLogin(x.val())}).catch(()=>{});
 function normPhone(p){let d=String(p||'').replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);if(d.startsWith('966'))return d;if(d.startsWith('0'))d=d.slice(1);return d?'966'+d:''}
 function localPhone(p){const d=String(p||'').replace(/\D/g,'');return d.startsWith('966')?'0'+d.slice(3):d}
-function fillPlans(L){window.PUBPL=L||[];$('rPl').innerHTML=(L||[]).map(p=>`<option value="${p.id}">${String(p.name).replace(/[<>&"]/g,'')} - ${p.price} ر.س/سنوياً</option>`).join('')||'<option value="0">سيُحدد لاحقاً</option>'}
-db.ref('modules').once('value').then(x=>{const o=x.val();if(o){const m={};Object.entries(o).forEach(([k,v])=>{if(k!=='import'&&k!=='excel'&&v&&v.name)m[k]=String(v.name)});window.FLAB2=m}}).catch(()=>{});fillPlans(SA.plans);db.ref('plans').once('value').then(x=>{const o=x.val();if(o)fillPlans(Object.entries(o).map(([id,p])=>({id,name:p.name,price:p.price,units:p.units,users:p.users,f:p.features||{}})))}).catch(()=>{});
+function fillPlans(L){window.PUBPL=L||[];$('rPl').innerHTML=(L||[]).map(p=>`<option value="${p.id}">${String(p.name).replace(/[<>&"]/g,'')} - ${p.price} ر.س/شهرياً${p.old>p.price?' (بدل '+p.old+')':''}</option>`).join('')||'<option value="0">سيُحدد لاحقاً</option>'}
+db.ref('modules').once('value').then(x=>{const o=x.val();if(o){const m={};Object.entries(o).forEach(([k,v])=>{if(k!=='import'&&k!=='excel'&&v&&v.name)m[k]=String(v.name)});window.FLAB2=m}}).catch(()=>{});fillPlans(SA.plans);db.ref('plans').once('value').then(x=>{const o=x.val();if(o)fillPlans(Object.entries(o).map(([id,p])=>({id,name:p.name,price:p.price,old:p.old||0,disc:p.disc||0,units:p.units,users:p.users,f:p.features||{}})))}).catch(()=>{});
 function showReg(on){$('loginBox').style.display=on?'none':'block';$('regBox').style.display=on===1?'block':'none';$('regDone').style.display=on===2?'block':'none';$('te').textContent=''}
 async function regSubmit(){
  const v=id=>$(id).value.trim(),e=$('re'),bad=m=>{e.textContent=m};
@@ -409,7 +425,7 @@ async function buildCache(u){
  const t=await g('tenants/'+tid);if(!t)return bad('المنشأة غير موجودة');
  if(!prev){if(t.active!==true)return bad('حساب المنشأة موقوف، تواصل مع الإدارة');if((t.endTs||0)<Date.now())return bad('انتهى اشتراك المنشأة، تواصل معنا للتجديد')}
  const [pl,st]=await Promise.all([g('plans'),g('system/settings')]);
- localStorage.setItem('sa_cache',JSON.stringify({tenants:[{id:tid,code:t.code,name:t.name,type:t.type,owner:t.owner,phone:t.phone,address:t.address||'',plan:t.planId,end:t.end,on:t.active===true,addons:Object.keys(t.addons||{}),importDone:t.importDone||0,gift:!!t.gift}],users:[me],plans:Object.entries(pl||{}).map(([id,p])=>({id,name:p.name,price:p.price,units:p.units,users:p.users,f:p.features||{}})),settings:st||{},tickets:SA.tickets||[]}));
+ localStorage.setItem('sa_cache',JSON.stringify({tenants:[{id:tid,code:t.code,name:t.name,type:t.type,owner:t.owner,phone:t.phone,address:t.address||'',plan:t.planId,end:t.end,on:t.active===true,addons:Object.keys(t.addons||{}),importDone:t.importDone||0,gift:!!t.gift}],users:[me],plans:Object.entries(pl||{}).map(([id,p])=>({id,name:p.name,price:p.price,old:p.old||0,disc:p.disc||0,units:p.units,users:p.users,f:p.features||{}})),settings:st||{},tickets:SA.tickets||[]}));
  sessionStorage.setItem('tid',tid);sessionStorage.setItem('uid',u.uid);if(prev)sessionStorage.setItem('sa','1');
  location.reload()}
 auth.onAuthStateChanged(async u=>{
@@ -521,10 +537,10 @@ function editBooking(id){
 function delBooking(id){const o=bookings.find(b=>String(b.id)===String(id));bookings=bookings.filter(b=>String(b.id)!==String(id));save();if(o)releaseSlot(o)}
 
 /* expenses */
-$('ef').onsubmit=e=>{e.preventDefault();expenses.push({id:Date.now(),title:$('eTitle').value.trim(),category:$('eCat').value,amount:num($('eAmt').value),date:$('eDate').value});save();$('ef').reset();$('eDate').value=today();alert('تم تسجيل المصروف بنجاح!')};
+$('ef').onsubmit=e=>{e.preventDefault();expenses.push({id:Date.now(),title:$('eTitle').value.trim(),category:$('eCat').value,unit:($('eUnit')&&$('eUnit').value)||'',amount:num($('eAmt').value),date:$('eDate').value});save();$('ef').reset();$('eDate').value=today();alert('تم تسجيل المصروف بنجاح!')};
 function delExp(id){if(confirm('حذف هذا البند؟')){expenses=expenses.filter(e=>String(e.id)!==String(id));save()}}
 function renderExp(){
- $('expBody').innerHTML=expenses.length?expenses.map(e=>`<tr><td><b>${esc(e.title)}</b></td><td>${esc(e.category)}</td><td style="color:#c62828;font-weight:700">${e.amount} ر.س</td><td>${e.date}</td><td><button class="btn no" style="width:auto;padding:6px 10px" onclick="delExp('${sid(e.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:#a4b0be;padding:20px">لا توجد مصروفات مسجلة</td></tr>'}
+ $('expBody').innerHTML=expenses.length?expenses.map(e=>`<tr><td><b>${esc(e.title)}</b></td><td>${esc(e.category)}</td><td class="uc">${esc(e.unit||'عام')}</td><td style="color:#c62828;font-weight:700">${e.amount} ر.س</td><td>${e.date}</td><td><button class="btn no" style="width:auto;padding:6px 10px" onclick="delExp('${sid(e.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:#a4b0be;padding:20px">لا توجد مصروفات مسجلة</td></tr>'}
 
 /* dashboard */
 function dash(){
@@ -718,7 +734,7 @@ function sendTicket(){const t=$('tkT').value.trim(),m=$('tkM').value.trim();if(!
 function applyFeatures(){
  document.querySelectorAll('#nav li[data-f]').forEach(li=>li.style.display=HAS(li.dataset.f)?'':'none');
  document.querySelectorAll('[data-ft]').forEach(el=>el.style.display=HAS(el.dataset.ft)?'':'none');
- if(ME&&ME.role!=='owner')document.querySelectorAll('#nav li').forEach(li=>{if(['expenses','reports','backup','staff','units'].includes(li.dataset.t))li.style.display='none'});
+ if(ME&&ME.role!=='owner')document.querySelectorAll('#nav li').forEach(li=>{if(!['new','calendar','records','reminders'].includes(li.dataset.t))li.style.display='none'});
  const bc=$('brandCard');if(bc)bc.style.display=HAS('branding')?'block':'none';
  const ls=$('invLangSel');if(ls)ls.style.display=HAS('lang')?'inline-block':'none';
  applyBrand();refUnits()}
@@ -779,7 +795,7 @@ function fbListen(){
  W(b+'units','cruise_units',[],()=>{refUnits();if($('units').classList.contains('active'))renderUnits()});
  W(b+'templates','cruise_tpl',{},()=>{});
  db.ref('tenants/'+TID).on('value',s=>{const t=s.val();if(t)applyTenant(t)});
- db.ref('plans').on('value',s=>{const o=s.val();if(!o)return;SA.plans=Object.entries(o).map(([id,p])=>({id,name:p.name,price:p.price,units:p.units,users:p.users,f:p.features||{}}));PL=SA.plans.find(p=>p.id==TEN.plan)||PL;persistSA();applyFeatures()},()=>{})}
+ db.ref('plans').on('value',s=>{const o=s.val();if(!o)return;SA.plans=Object.entries(o).map(([id,p])=>({id,name:p.name,price:p.price,old:p.old||0,disc:p.disc||0,units:p.units,users:p.users,f:p.features||{}}));PL=SA.plans.find(p=>p.id==TEN.plan)||PL;persistSA();applyFeatures()},()=>{})}
 /* init */
 (function(){
  if(!TEN)return;
@@ -907,7 +923,7 @@ const sel=document.getElementById('rPl').value,o=document.createElement('div');o
 const box=document.createElement('div');box.style.cssText='background:#F6EBDD;color:#3D2B1F;border-radius:18px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:16px;box-shadow:0 10px 40px #0006;animation:pop .18s ease-out';
 let h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><b style="font-size:19px">الباقات ومميزاتها</b><button type="button" id="plX" aria-label="إغلاق" style="background:none;border:0;font-size:24px;min-height:0;padding:0 6px;color:#3D2B1F">✕</button></div>';
 h+=L.map(p=>{const f=Object.keys(p.f||{}).filter(k=>p.f[k]&&(window.FLAB2||FLAB)[k]).map(k=>(window.FLAB2||FLAB)[k]);const hot=String(p.id)===String(sel);
-return '<div style="background:#fff;border:'+(hot?'2px solid #E76F51':'1px solid #E6D5BF')+';border-radius:14px;padding:14px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:18px">'+esc(p.name)+'</b><span style="color:#C8553A;font-weight:800">'+esc(p.price)+' <small style="font-weight:500">ر.س / سنوياً</small></span></div>'
+return '<div style="background:#fff;border:'+(hot?'2px solid #E76F51':'1px solid #E6D5BF')+';border-radius:14px;padding:14px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:18px">'+esc(p.name)+'</b><span style="color:#C8553A;font-weight:800">'+(p.old>p.price?'<s style="color:#999;font-weight:500;font-size:14px">'+esc(p.old)+'</s> ':'')+esc(p.price)+' <small style="font-weight:500">ر.س / شهرياً</small></span></div>'
 +'<div style="font-size:14px;color:#6B5646;margin:6px 0">'+(p.units?'الوحدات: '+esc(p.units)+'  ':'')+(p.users?' • المستخدمون: '+esc(p.users):'')+'</div>'
 +'<div style="font-size:14px;line-height:1.9">'+(f.length?f.map(x=>'<div>✓ '+esc(x)+'</div>').join(''):'<div style="color:#888">التفاصيل سيحددها فريق الدعم</div>')+'</div>'
 +'<button type="button" data-pid="'+esc(p.id)+'" style="width:100%;margin-top:10px;background:#E76F51;color:#fff;border:0;border-radius:10px;padding:9px;font-weight:800">اختيار هذه الباقة</button></div>'}).join('');
@@ -917,11 +933,6 @@ box.querySelectorAll('[data-pid]').forEach(b=>b.onclick=()=>{document.getElement
 </script>
 <script>
 /* ===== التاريخ الهجري + الاستيراد الذكي ===== */
-const _HF=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn',{year:'numeric',month:'numeric',day:'numeric',timeZone:'UTC'});
-function g2h(iso){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');if(!m)return '';try{const o={};_HF.formatToParts(new Date(Date.UTC(+m[1],+m[2]-1,+m[3],12))).forEach(x=>o[x.type]=x.value);return o.year+'/'+('0'+o.month).slice(-2)+'/'+('0'+o.day).slice(-2)}catch(e){return ''}}
-function h2g(y,mo,d){if(y<1300||y>1600||mo<1||mo>12||d<1||d>30)return '';const jd=d+Math.ceil(29.5*(mo-1))+(y-1)*354+Math.floor((3+11*y)/30)+1948439.5-1,base=Math.round(jd-2440587.5),want=y+'/'+('0'+mo).slice(-2)+'/'+('0'+d).slice(-2);for(let k=-3;k<=3;k++){const iso=new Date((base+k)*864e5+432e5).toISOString().slice(0,10);if(g2h(iso)===want)return iso}return ''}
-const calMode=()=>{try{return localStorage.getItem('calmode')==='h'?'h':'g'}catch(e){return 'g'}};
-function dFmt(iso){const h=g2h(iso);return esc(iso)+(h?'<br><small style="color:#718093">'+h+' هـ</small>':'')}
 const HMN=['محرم','صفر','ربيع الأول','ربيع الآخر','جمادى الأولى','جمادى الآخرة','رجب','شعبان','رمضان','شوال','ذو القعدة','ذو الحجة'];
 let HY=0,HM=0;
 function hSplit(iso){const m=(g2h(iso)||'').split('/');return m.length===3?[+m[0],+m[1],+m[2]]:null}
@@ -1002,6 +1013,71 @@ fillCs();
 function rcDate(d){if(!d)return '';const h=g2h(d);if(!h)return d;return calMode()==='h'?h+' هـ ('+d+')':d+' ('+h+' هـ)'}
 function rcNow(){try{return new Date().toLocaleString(calMode()==='h'?'ar-SA-u-ca-islamic-umalqura-nu-latn':'ar-SA-u-ca-gregory-nu-latn',{timeZone:'Asia/Riyadh'})}catch(e){return new Date().toLocaleString()}}
 (function(){const o=setCal;setCal=function(m){o(m);try{const rm=document.getElementById('rm');if(rm&&getComputedStyle(rm).display!=='none'&&active)openRc(active.id)}catch(e){}}})();
+</script>
+<script>
+/* ===== الفروع في المصروفات والميزانية + قصر الموظفين على التسجيل ===== */
+const _UNITS=()=>{try{return HAS('multi')?ld('cruise_units',[]):[]}catch(e){return []}};
+function fillEUnit(){const us=_UNITS(),w=document.getElementById('eUnitWrap'),sel=document.getElementById('eUnit');document.body.classList.toggle('hasunits',us.length>0);if(!w||!sel)return;w.style.display=us.length?'':'none';const cur=sel.value;sel.innerHTML='<option value="">عام (كل الوحدات)</option>'+us.map(u=>'<option>'+esc(u)+'</option>').join('');sel.value=cur}
+function fillRUnit(){const us=_UNITS(),box=document.getElementById('repBox');if(!box)return;let w=document.getElementById('rUnitWrap');if(!w){w=document.createElement('div');w.id='rUnitWrap';w.style.cssText='margin-bottom:10px';w.innerHTML='<label>عرض الميزانية لـ</label><select id="rUnit" onchange="report()"></select>';box.parentNode.insertBefore(w,box)}
+ w.style.display=us.length?'':'none';const sel=document.getElementById('rUnit'),cur=sel.value;sel.innerHTML='<option value="">كل الوحدات (مع التفصيل)</option><option value="__none">بدون وحدة (عام)</option>'+us.map(u=>'<option>'+esc(u)+'</option>').join('');sel.value=cur}
+const _rep=report;
+report=function(){fillRUnit();const u=(document.getElementById('rUnit')||{}).value||'';
+ if(!u){_rep();const us=_UNITS();if(us.length)document.getElementById('repBox').insertAdjacentHTML('beforeend',unitBreakdown(us));return}
+ const bk=bookings,ex=expenses,m=x=>u==='__none'?!(x.unit||''):(x.unit||'')===u;bookings=bk.filter(m);expenses=ex.filter(m);try{_rep()}finally{bookings=bk;expenses=ex}
+ document.getElementById('repBox').insertAdjacentHTML('afterbegin','<div style="padding:8px 12px;background:#fff7e6;border-radius:8px;margin-bottom:10px">الوحدة: <b>'+esc(u==='__none'?'بدون وحدة (عام)':u)+'</b></div>')};
+function unitBreakdown(us){const cm=today().slice(0,7),names=us.concat(['']),rows=names.map(u=>{const bs=bookings.filter(b=>String(b.date||'').startsWith(cm)&&(b.unit||'')===u),es=expenses.filter(e=>String(e.date||'').startsWith(cm)&&(e.unit||'')===u);
+  if(u===''&&!bs.length&&!es.length)return '';const inc=bs.reduce((a,b)=>a+num(b.paid),0),ex=es.reduce((a,e)=>a+num(e.amount),0),net=inc-ex;
+  return '<tr><td><b>'+esc(u||'عام / بدون وحدة')+'</b></td><td>'+bs.length+'</td><td>'+inc.toLocaleString()+'</td><td>'+ex.toLocaleString()+'</td><td style="color:'+(net>=0?'#10ac84':'#c62828')+';font-weight:700">'+net.toLocaleString()+'</td></tr>'}).join('');
+ return '<div style="padding:14px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;margin-top:12px"><b>الميزانية حسب الوحدة / الفرع (الشهر الحالي)</b><div class="tr"><table><thead><tr><th>الوحدة</th><th>الحجوزات</th><th>الإيرادات</th><th>المصروفات</th><th>الصافي</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>'}
+(function(){const ALLOW=['new','calendar','records','reminders'],o=sw;sw=function(t){try{if(ME&&ME.role!=='owner'&&!ALLOW.includes(t))t='new'}catch(e){}o(t);if(t==='expenses')fillEUnit();if(t==='reports')fillRUnit()};
+ let k=0;const iv=setInterval(()=>{k++;try{if(typeof ME!=='undefined'&&ME){clearInterval(iv);fillEUnit();if(ME.role!=='owner')sw('new')}}catch(e){}if(k>40)clearInterval(iv)},300)})();
+</script>
+<script>
+/* ===== التعبئة الذكية للحجز (إضافة) ===== */
+const MONG=[['يناير',1],['فبراير',2],['مارس',3],['أبريل',4],['ابريل',4],['مايو',5],['يونيو',6],['يوليو',7],['أغسطس',8],['اغسطس',8],['سبتمبر',9],['أكتوبر',10],['اكتوبر',10],['نوفمبر',11],['ديسمبر',12]];
+const MONH=[['محرم',1],['صفر',2],['ربيع الأول',3],['ربيع الاول',3],['ربيع الآخر',4],['ربيع الاخر',4],['ربيع الثاني',4],['جمادى الأولى',5],['جمادى الاولى',5],['جمادى الآخرة',6],['جمادى الاخرة',6],['جمادى الثانية',6],['رجب',7],['شعبان',8],['رمضان',9],['شوال',10],['ذو القعدة',11],['ذي القعدة',11],['ذو الحجة',12],['ذي الحجة',12]];
+const WDN=[['الأحد',0],['الاحد',0],['الإثنين',1],['الاثنين',1],['الثلاثاء',2],['الأربعاء',3],['الاربعاء',3],['الخميس',4],['الجمعة',5],['السبت',6]];
+const SF_LABELS={name:/^(?:ال)?اسم(?:\s*الكامل)?|^الاسم/,phone:/جوال|هاتف|موبايل|واتس|رقم/,date:/تاريخ|موعد|يوم\s*الحجز/,period:/فترة|وقت/,section:/قسم|نوع/,unit:/وحدة|فرع|شاليه|استراحة/,notes:/ملاحظ/};
+function sfDate(t){t=nd(t);let m=t.match(/\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}|\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4}/);if(m){const d=xDate(m[0]);if(d)return{iso:d,why:''}}
+ const nm=t.replace(/\s+/g,' ');
+ for(const [list,hij] of [[MONH,true],[MONG,false]]){for(const [n,k] of list){const r=new RegExp('(\\d{1,2})\\s*(?:من\\s*)?(?:شهر\\s*)?'+n+'(?:\\s*(\\d{4}))?');const x=nm.match(r);if(!x)continue;const d=+x[1],td=today();
+   if(hij){const hp=hSplit(td)||[1447,1,1];let y=x[2]?+x[2]:hp[0];let iso=h2g(y,k,d);if(!x[2]&&iso&&iso<td)iso=h2g(++y,k,d);if(iso)return{iso,why:'هجري'}}
+   else{let y=x[2]?+x[2]:+td.slice(0,4);let iso=y+'-'+('0'+k).slice(-2)+'-'+('0'+d).slice(-2);if(!x[2]&&iso<td)iso=(y+1)+iso.slice(4);if(!isNaN(new Date(iso+'T12:00:00Z')))return{iso,why:''}}}}
+ const td=today();if(/بعد\s*(?:بكرة|بكره|غد)/.test(nm))return{iso:addDays(td,2),why:'بعد غد'};if(/بكرة|بكره|غدا|غداً|غدًا/.test(nm))return{iso:addDays(td,1),why:'غداً'};if(/اليوم/.test(nm)&&!/يوم\s*(?:ال|كامل)/.test(nm))return{iso:td,why:'اليوم'};
+ for(const [n,wd] of WDN){if(nm.includes(n)){const cur=new Date(td+'T12:00:00Z').getUTCDay();let diff=(wd-cur+7)%7;if(diff===0)diff=7;return{iso:addDays(td,diff),why:'يوم '+n+' القادم'}}}
+ return null}
+function sfPhone(t){const c=nd(t).match(/[\d+][\d\s\-]{7,16}\d/g)||[];for(const x of c){const p=xPhone(x);if(p)return p}return ''}
+function sfParse(text){const out={},rest=[],raw=String(text||'');const lines=raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),lab={};
+ lines.forEach(l=>{const m=l.match(/^([^:：\-–—]{2,30})[:：\-–—]\s*(.*)$/);if(m){const key=Object.keys(SF_LABELS).find(k=>SF_LABELS[k].test(m[1].trim()));if(key){if(m[2].trim())lab[key]=m[2].trim();return}}rest.push(l)});
+ const all=raw;
+ out.phone=sfPhone(lab.phone||'')||sfPhone(all);
+ const dv=lab.date?sfDate(lab.date):null;const dd=dv||sfDate(all);if(dd)out.date=dd.iso,out.dateWhy=dd.why;
+ const per=s=>/يوم\s*كامل|full\s*day/i.test(s)?'يوم كامل':/صباح|morning/i.test(s)?'صباح':/مساء|مسائ|evening/i.test(s)?'مساء':'';
+ out.period=per(lab.period||'')||per(all);
+ const sec=s=>/قسمين|كامل\s*الشاليه|\bboth\b/i.test(s)?'قسمين':/نساء|نسائ|women|ladies|female/i.test(s)?'نساء':/رجال|\bmen\b|\bmale\b/i.test(s)?'رجال':'';
+ out.section=sec(lab.section||'')||sec(all);
+ if(lab.unit)out.unit=lab.unit;if(lab.notes)out.notes=lab.notes;
+ let nm=lab.name?lab.name.replace(/[\d+].*$/,'').trim():'';
+ if(!nm){const skip=/السلام|مرحب|حياك|ابغ|ابي|أبي|أبغى|اريد|أريد|احجز|حجز|هلا|شكرا|الرجاء|المطلوب/;
+  const cand=rest.flatMap(l=>l.split(/\s[-–—|]\s|\||،/)).map(l=>l.replace(/[\d+][\d\s\-]*/g,' ').replace(/[،,.:؛]/g,' ').trim()).filter(l=>l&&!skip.test(l)&&!kw(l)&&l.split(/\s+/).length<=4&&/[\u0600-\u06FFA-Za-z]{2,}/.test(l));
+  nm=cand[0]||'';
+  if(!nm){const m=all.match(/(?:اسمي|انا|أنا|الاسم)\s+([\u0600-\u06FF]+(?:\s+[\u0600-\u06FF]+){0,2})/);if(m)nm=m[1].replace(/\s+(?:جوال|رقم|ابغ|ابي|يوم|مساء|صباح|قسم).*$/,'').trim()}}
+ nm=nm.replace(/^(?:اسمي|انا|أنا|الاسم|اسم)\s+/,'').replace(/\s+(?:جوال[\u0621-\u064A]*|رقم[\u0621-\u064A]*|هاتف[\u0621-\u064A]*|موبايل[\u0621-\u064A]*|ابغ[\u0621-\u064A]*|ابي|يوم|مساء|صباح|قسم)(?:\s.*)?$/,'').trim();out.name=nm;return out}
+function sfFill(){const r=sfParse(document.getElementById('sfText').value),el=id=>document.getElementById(id),ok=[],miss=[];
+ const set=(id,v)=>{const e=el(id);if(e&&v!==undefined&&v!==''){e.value=v;e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));return true}return false};
+ (r.name&&set('bName',r.name)?ok:miss).push('الاسم');
+ (r.phone&&set('bPhone',r.phone)?ok:miss).push('الجوال');
+ if(r.date&&set('bDate',r.date)){ok.push('التاريخ'+(r.dateWhy?' ('+r.dateWhy+')':'')+' ← '+r.date+' / '+g2h(r.date)+' هـ');try{syncHij(true)}catch(e){}}else miss.push('التاريخ');
+ (r.period&&set('bPeriod',r.period)?ok:miss).push('الفترة');
+ if(r.section){const o=[...el('bSec').options].find(x=>x.value.indexOf(r.section)===0||x.text.indexOf(r.section)===0);if(o){el('bSec').value=o.value;ok.push('القسم');}else miss.push('القسم')}else miss.push('القسم');
+ if(r.unit&&el('bUnit')){const o=[...el('bUnit').options].find(x=>x.text.trim()===r.unit.trim()||r.unit.includes(x.text.trim())&&x.text.trim());if(o){el('bUnit').value=o.value;ok.push('الوحدة')}}
+ el('sfOut').innerHTML=(ok.length?'<div style="color:#10845f"><b>✓ تم التعرف على:</b><br>'+ok.map(esc).join('<br>')+'</div>':'')+(miss.length?'<div style="color:#c62828;margin-top:6px"><b>✗ لم أجد:</b> '+miss.join('، ')+' — أكملها يدوياً</div>':'')+'<div style="color:#6B5646;margin-top:6px">راجع البيانات أدناه قبل الحفظ.</div>';
+ try{el('bName').scrollIntoView({behavior:'smooth',block:'center'})}catch(e){}}
+function sfTplDefault(){let t='السلام عليكم ورحمة الله،\nلإتمام حجزك'+(typeof NAME==='string'&&NAME?' في '+NAME:'')+' الرجاء تعبئة البيانات التالية وإرسالها لنا:\n\nالاسم الكامل: \nرقم الجوال: \nتاريخ الحجز: \nالفترة (صباح / مساء / يوم كامل): \nالقسم (نساء / رجال / قسمين): \n';try{if(_UNITS().length)t+='الوحدة / الفرع: \n'}catch(e){}return t+'ملاحظات: \n\nشكراً لك'}
+function sfTplGet(){const e=document.getElementById('sfTpl');try{localStorage.setItem('sf_tpl',e.value)}catch(x){}return e.value}
+function sfSend(){window.open('https://wa.me/?text='+encodeURIComponent(sfTplGet()),'_blank')}
+function sfCopy(){const t=sfTplGet();if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>alert('تم نسخ النموذج')).catch(()=>prompt('انسخ النموذج:',t));else prompt('انسخ النموذج:',t)}
+(function(){let k=0;const iv=setInterval(()=>{k++;try{const e=document.getElementById('sfTpl');if(e&&typeof NAME!=='undefined'){clearInterval(iv);let v='';try{v=localStorage.getItem('sf_tpl')||''}catch(x){}e.value=v||sfTplDefault()}}catch(x){}if(k>40)clearInterval(iv)},300)})();
 </script>
 </body>
 </html>
